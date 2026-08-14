@@ -66,8 +66,11 @@ test('personaliza identificadores, nome visível e organização', () => {
 test('remove a demonstração e deixa uma composição sem imports quebrados', () => {
   const root = copyFixture();
   try {
+    const exampleFeature = join(root, 'src/features/notes/index.ts');
     const customFeature = join(root, 'src/features/custom-feature/index.ts');
+    mkdirSync(dirname(exampleFeature), { recursive: true });
     mkdirSync(dirname(customFeature), { recursive: true });
+    writeFileSync(exampleFeature, 'export const noteFixture = true;\n');
     writeFileSync(customFeature, 'export const customFeature = true;\n');
 
     runSetup(root, '--name=clean-app', '--remove-example', '--reset-tasks', '--no-sync-skills');
@@ -179,8 +182,11 @@ test('restaura a demonstração quando uma etapa posterior falha', () => {
   const root = copyFixture();
   try {
     const notes = join(root, 'src/features/notes');
+    const exampleFeature = join(notes, 'index.ts');
     const customFeature = join(root, 'src/features/custom-feature/index.ts');
+    mkdirSync(notes, { recursive: true });
     mkdirSync(dirname(customFeature), { recursive: true });
+    writeFileSync(exampleFeature, 'export const noteFixture = true;\n');
     writeFileSync(customFeature, 'export const customFeature = true;\n');
 
     const result = spawnSync(
@@ -191,6 +197,7 @@ test('restaura a demonstração quando uma etapa posterior falha', () => {
 
     assert.notEqual(result.status, 0);
     assert.equal(existsSync(notes), true);
+    assert.equal(readFileSync(exampleFeature, 'utf8'), 'export const noteFixture = true;\n');
     assert.equal(readFileSync(customFeature, 'utf8'), 'export const customFeature = true;\n');
   } finally {
     rmSync(root, { recursive: true, force: true });

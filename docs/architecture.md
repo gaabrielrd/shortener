@@ -1,6 +1,6 @@
 # Arquitetura
 
-Este documento descreve como o código do `web-project-template` é organizado e as regras que mantêm o projeto simples e sustentável.
+Este documento descreve como o código do `Short Links` é organizado e as regras que mantêm o projeto simples e sustentável.
 
 ## Princípios
 
@@ -15,6 +15,124 @@ Ao iniciar um aplicativo a partir do template, use a skill `plan-app` para condu
 
 Este arquivo continua sendo a fonte das decisões técnicas. A `plan-app` deve preservar as regras do template e acrescentar uma seção `Decisões do produto` com o limite do sistema, o mapa de features, o fluxo de dados, a persistência, as integrações e os trade-offs definidos para o aplicativo. O PRD explica **o que e por que** construir; a arquitetura explica **como o sistema será organizado**.
 
+## Decisões do produto
+
+### Limite do sistema
+
+O Short Links é uma SPA administrativa em português do Brasil, responsiva para
+computador e celular, acompanhada por um backend Firebase e por uma rota pública
+de redirecionamento. A administração exige login Google. O acesso a um endereço
+curto é público e não identifica o visitante.
+
+A entrega usa um único domínio curto no Firebase Hosting. Rewrites encaminham o
+identificador público a uma Cloud Function, que resolve somente links ativos,
+incrementa os agregados de analytics e responde com redirecionamento temporário
+para o destino atual. Links indisponíveis usam uma resposta pública genérica que
+não revela equipe, criador nem destino. Não há funcionamento offline.
+
+### Mapa de features
+
+| Feature     | Responsabilidade                                                              | Interface pública esperada                                       |
+| ----------- | ----------------------------------------------------------------------------- | ---------------------------------------------------------------- |
+| `auth`      | Sessão Google, perfil mínimo e proteção das rotas administrativas             | Estado da sessão e ações de entrar e sair                        |
+| `teams`     | Equipes, seleção do contexto ativo, membros, níveis e convites                | Equipe ativa, permissões e operações administrativas autorizadas |
+| `links`     | Criação, consulta, edição, desativação, arquivamento, restauração e histórico | Lista, detalhe e comandos de gestão de links permitidos          |
+| `analytics` | Total e série diária agregada de cada link                                    | Consulta dos indicadores autorizados para o detalhe do link      |
+
+Cada feature mantém regras e tipos em `model/`, integração com o backend em
+`services/`, telas em `components/`, testes de comportamento em `tests/` e
+expõe somente seu `index.ts`. As rotas administrativas, de convite e de
+indisponibilidade são compostas em `app/routes/`. Uma feature que precisar de
+outra usa apenas sua interface pública; detalhes internos não atravessam a
+fronteira.
+
+A inicialização do Firebase e clientes neutros ficam em infraestrutura
+compartilhada sob `shared`, sem regras de equipe ou link. A configuração pública
+é lida somente por `shared/config/env.ts`. Credenciais administrativas e outras
+informações secretas existem apenas no ambiente do backend.
+
+### Backend, dados e autorização
+
+Firebase Authentication fornece login Google. Cloud Firestore persiste perfis
+mínimos, equipes, associações, convites, links, histórico e analytics. Cloud
+Functions concentra redirecionamento, consumo de convite e operações que exigem
+coordenação ou atualização atômica. Firebase Security Rules protege qualquer
+acesso direto permitido ao cliente.
+
+O backend é a fonte da verdade para autorização:
+
+- administradores acessam membros, convites e todos os links da equipe;
+- membros acessam e alteram somente os links que criaram;
+- links continuam pertencendo à equipe após a saída do criador;
+- o último administrador não pode sair, ser removido nem rebaixado;
+- convites são reutilizáveis até a data escolhida ou o cancelamento;
+- identificadores são reservados atomicamente e são únicos em todo o sistema.
+
+Controles ocultos na interface são apenas feedback de experiência e não
+substituem Rules ou Functions. Tokens de convite concedem entrada enquanto
+válidos e, por isso, são tratados como dados sensíveis, não aparecem em
+listagens públicas e podem ser cancelados pelo administrador.
+
+### Fluxos de dados
+
+1. No login, o cliente recebe a sessão do Firebase Authentication e recupera as
+   equipes autorizadas no Firestore.
+2. Ao consumir um convite, uma Function valida sessão, token, validade e estado
+   antes de criar a associação de membro.
+3. Ao criar um link, o backend valida destino e identificador e reserva o nome
+   global em uma operação atômica; conflitos não produzem gravação parcial.
+4. Alterações de destino ou estado atualizam o link e acrescentam um registro
+   imutável com autor, data, valor anterior e valor novo.
+5. No acesso público, a Function resolve o identificador, confirma que o link
+   está ativo, incrementa o total e o contador do dia UTC e inicia o
+   redirecionamento. Se qualquer verificação falhar, não conta clique nem revela
+   dados internos.
+6. O detalhe administrativo lê apenas o total e os agregados diários. Não há
+   evento individual, IP, identidade, localização, dispositivo nem origem do
+   visitante.
+
+O identificador aceita de 3 a 50 letras minúsculas, números ou hífens e é
+comparado sem diferença de caixa. Destinos `http://` e `https://` são aceitos.
+Links não expiram automaticamente. Arquivamento preserva dados e mantém o
+identificador reservado; restauração reativa o mesmo endereço. Alterar o destino
+não reinicia analytics.
+
+### Estado e interfaces
+
+Não será adicionado gerenciador global de estado por padrão. Sessão e equipe
+ativa podem usar providers de composição em `app`; dados e estados de
+carregamento, vazio, sucesso e erro permanecem nos limites das features. Escrita
+remota só confirma sucesso após persistência. Conflitos e falhas mantêm o dado
+anterior e oferecem nova tentativa quando segura.
+
+As telas usam o kit de `@vitru/styleguide`, preservam a rota `/styleguide` e
+atendem teclado, foco visível, rótulos e mensagens associadas. O dashboard cobre
+equipe vazia, lista autorizada, erro e carregamento. Detalhes cobrem ausência de
+cliques, histórico, falha e acesso negado. A página pública de indisponibilidade
+é acessível e não depende de sessão.
+
+### Distribuição, operação e trade-offs
+
+A SPA e o domínio curto são publicados no Firebase Hosting; Firestore, Cloud
+Functions e Authentication formam o backend. O redirecionamento deve começar em
+até 1 segundo em condições normais. Chrome, Edge, Firefox e Safari atuais são os
+navegadores atendidos.
+
+O produto excede deliberadamente o limite inicial do template, que não inclui
+autenticação real nem backend. Essa ampliação foi aprovada porque equipes,
+permissões, redirecionamento público e analytics compartilhados não podem ser
+atendidos por armazenamento somente no navegador. O custo é maior dependência
+do Firebase, configuração operacional e necessidade de regras e testes de
+segurança.
+
+Convites reutilizáveis simplificam a entrada de uma equipe, mas podem ser
+repassados; validade e cancelamento são as medidas de contenção aprovadas.
+Aceitar destinos HTTP preserva compatibilidade, embora não garanta transporte
+seguro no destino. Analytics agregados reduzem custo e exposição de dados em
+troca de não oferecer visitantes únicos ou segmentação. Arquivamento em vez de
+exclusão definitiva preserva auditoria e evita que um endereço antigo seja
+reassociado a outro conteúdo.
+
 ## Árvore de pastas
 
 ```
@@ -23,8 +141,7 @@ src/
 │   ├── components/  # telas de erro e não encontrado usadas pelas rotas
 │   ├── routes/      # definição das rotas e o router
 │   └── tests/       # smoke test da composição
-├── features/     # cada capacidade do produto em sua própria pasta
-│   └── notes/    # demonstração canônica; removida por --remove-example
+├── features/     # auth, teams, links e analytics em pastas independentes
 ├── shared/       # reutilizável e neutro: config, hooks, lib, types
 ├── test/         # setup.ts e render.tsx (utilidades de teste)
 └── main.tsx      # ponto de entrada da aplicação
@@ -81,17 +198,10 @@ substituir a fonte por dados fake nos testes. Veja [integrations.md](integration
 
 Persistência local (ex.: `localStorage`) fica isolada em `services/`,
 `adapters/` ou `repositories/`. Dados lidos na fronteira são validados antes de
-entrar no modelo. O exemplo de notas grava um envelope versionado com revisão
-monotônica, migra automaticamente o array legado, preserva dados inválidos em
-uma chave de backup e rejeita gravações feitas sobre uma revisão antiga. Eventos
-de `storage` sincronizam abas abertas. Falhas de leitura, conflito e escrita têm
-códigos estáveis e são apresentadas pela interface; uma operação nunca confirma
-sucesso antes da persistência terminar.
-
-A orquestração da lista demonstrativa fica em um hook interno da feature. O
-componente `NoteList` cuida da composição visual e semântica, enquanto o hook
-coordena validação, revisões e sincronização sem expor detalhes pela interface
-pública da feature.
+entrar no modelo. Para o Short Links, o Firestore é a persistência principal e
+seu acesso segue a mesma separação por serviços. Falhas de leitura, conflito e
+escrita têm códigos estáveis e são apresentadas pela interface; uma operação
+nunca confirma sucesso antes da persistência terminar.
 
 Novas versões do formato persistido devem ter migração explícita e teste do formato anterior. Nunca apague silenciosamente dados que não puderem ser interpretados.
 

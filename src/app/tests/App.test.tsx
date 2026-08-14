@@ -20,6 +20,8 @@ describe('composicao da aplicacao', () => {
 
     expect(await screen.findByRole('banner')).toBeInTheDocument();
     expect(screen.getByRole('main')).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: /comandos npm disponíveis/i })).toBeInTheDocument();
+    expect(screen.queryByText(/exemplo: notas/i)).not.toBeInTheDocument();
   });
 
   it('mostra a tela de nao encontrado para um endereco desconhecido', async () => {

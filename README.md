@@ -1,32 +1,35 @@
-# web-project-template
+# Short Links
 
-Template de projeto front-end em React + TypeScript + Vite, pensado para pessoas que constroem interfaces com a ajuda de agentes de código. Vem com organização de pastas, padrões de qualidade e instruções para agentes já prontos.
+Aplicação web interna para equipes criarem links públicos curtos,
+personalizados e acompanharem analytics simples de cliques. O projeto usa React,
+TypeScript e Vite na interface e terá Firebase para autenticação e backend.
 
 ## Objetivo
 
-Dar um ponto de partida seguro e organizado para criar aplicações web simples. Você descreve o que quer, o agente implementa seguindo as regras deste template, e você valida com um único comando.
+Permitir que equipes publiquem endereços memoráveis, preservem o controle dos
+links e acompanhem o volume de acessos sem identificar visitantes.
 
-## Quando usar
+## Escopo da primeira versão
 
-Indicado para:
+Inclui:
 
-- Ferramentas internas simples
-- Dashboards leves
-- Formulários
-- Protótipos
-- Páginas de consulta
-- CRUD com dados locais (no navegador)
-- Demonstrações
+- Login com Google
+- Equipes, convites reutilizáveis e níveis de administrador e membro
+- Links personalizados com destinos HTTP ou HTTPS
+- Redirecionamento público
+- Total de cliques e evolução diária
+- Histórico de alterações
 
-## Quando NÃO usar (versão 1)
+## Fora da primeira versão
 
-- Aplicativos móveis ou desktop nativos
-- Backends complexos
-- Microsserviços
-- Sistemas financeiros ou com dados sensíveis
-- Autenticação real de usuários
-- Infraestrutura de produção crítica
-- Qualquer sistema de alta criticidade
+- Login por senha ou criação anônima
+- Domínios personalizados por equipe
+- Rastreamento de visitantes, dispositivo, localização ou origem
+- Aplicativo nativo ou funcionamento offline
+- Exclusão definitiva de equipes
+
+O escopo completo e os critérios de aceite estão em
+[docs/prd.md](docs/prd.md).
 
 ## Pré-requisitos
 
@@ -150,7 +153,6 @@ completos e continua sendo a fonte da verdade para integração.
 src/
 ├── app/          # composição geral (providers, rotas, layout) — sem regra de negócio
 ├── features/     # cada capacidade do produto em sua pasta
-│   ├── notes/    # demonstração canônica; removida por --remove-example
 ├── shared/       # reutilizável e neutro (config, hooks, lib, types)
 ├── test/         # setup.ts e render.tsx
 └── main.tsx
@@ -205,7 +207,8 @@ A leitura fica concentrada em [src/shared/config/env.ts](src/shared/config/env.t
 
 ## Limitações conhecidas
 
-- Sem backend: os dados vivem no navegador ou vêm de APIs externas.
-- Sem autenticação real nem armazenamento seguro de segredos — tudo no front-end é público.
+- Firebase ainda será configurado durante a implementação das features.
+- O dashboard depende de conexão; não há modo offline.
+- Analytics são agregados e não identificam nem segmentam visitantes.
 - Sem gerenciador global de estado por padrão.
-- Voltado a aplicações simples; não substitui projetos de alta criticidade.
+- Não é um sistema de alta criticidade.
