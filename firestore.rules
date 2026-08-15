@@ -1,0 +1,74 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    function isGoogleUser() {
+      return request.auth != null
+        && request.auth.token.firebase.sign_in_provider == 'google.com';
+    }
+
+    match /users/{userId} {
+      allow read: if isGoogleUser() && request.auth.uid == userId;
+      allow write: if false;
+    }
+
+    function isTeamMember(teamId) {
+      return isGoogleUser()
+        && exists(/databases/$(database)/documents/teams/$(teamId)/members/$(request.auth.uid));
+    }
+
+    function isTeamAdmin(teamId) {
+      return isTeamMember(teamId)
+        && get(/databases/$(database)/documents/teams/$(teamId)/members/$(request.auth.uid)).data.role == 'admin';
+    }
+
+    function canManageLink(slug) {
+      let link = get(/databases/$(database)/documents/links/$(slug)).data;
+      return isTeamMember(link.teamId)
+        && (isTeamAdmin(link.teamId) || link.createdBy == request.auth.uid);
+    }
+
+    match /teams/{teamId} {
+      allow get: if isTeamMember(teamId);
+      allow list, write: if false;
+
+      match /members/{memberId} {
+        allow read: if isTeamMember(teamId);
+        allow write: if false;
+      }
+    }
+
+    // A consulta collection-group exige o próprio UID como filtro. Ela revela
+    // somente as associações do usuário e permite então buscar cada equipe.
+    match /{path=**}/members/{memberId} {
+      allow read: if isGoogleUser()
+        && resource.data.uid == request.auth.uid;
+      allow write: if false;
+    }
+
+    match /inviteTokens/{inviteId} {
+      allow read: if isGoogleUser() && isTeamAdmin(resource.data.teamId);
+      allow write: if false;
+    }
+
+    match /links/{slug} {
+      allow read: if isTeamMember(resource.data.teamId)
+        && (isTeamAdmin(resource.data.teamId) || resource.data.createdBy == request.auth.uid);
+      allow write: if false;
+
+      match /history/{entryId} {
+        allow read: if canManageLink(slug);
+        allow write: if false;
+      }
+
+      match /dailyClicks/{dayUtc} {
+        allow read: if canManageLink(slug);
+        allow write: if false;
+      }
+    }
+
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}

@@ -2,6 +2,7 @@ import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
 import { RouterProvider } from 'react-router';
 import '@vitru/styleguide/styles.css';
+import { AppProviders } from './app/providers';
 import { router } from './app/routes';
 // Valida as variaveis de ambiente antes de montar a aplicacao: uma
 // configuracao ausente ou malformada falha aqui, com mensagem clara, em vez
@@ -17,6 +18,8 @@ if (!rootElement) {
 
 createRoot(rootElement).render(
   <StrictMode>
-    <RouterProvider router={router} />
+    <AppProviders>
+      <RouterProvider router={router} />
+    </AppProviders>
   </StrictMode>,
 );

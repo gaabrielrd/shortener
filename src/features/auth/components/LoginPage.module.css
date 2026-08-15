@@ -1,0 +1,95 @@
+.page {
+  min-height: 100svh;
+  display: grid;
+  place-items: center;
+  padding: var(--space-5);
+  background-color: var(--paper-2);
+}
+
+.login {
+  width: min(100%, var(--layout-max));
+  display: grid;
+  gap: var(--space-6);
+  padding: var(--space-7);
+  background-color: var(--paper);
+  border-left: var(--space-2) solid var(--accent);
+  box-shadow: var(--elevation-2);
+  animation: enter var(--transition-base) both;
+}
+
+.brand {
+  width: var(--space-8);
+  height: var(--space-8);
+  display: grid;
+  place-items: center;
+  border-radius: var(--radius-md);
+  color: var(--on-accent);
+  background-color: var(--accent);
+}
+
+.action {
+  max-width: 32rem;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--space-4);
+}
+
+.action h1,
+.action p,
+.note {
+  margin: 0;
+}
+
+.action h1 {
+  color: var(--navy);
+  font-size: var(--text-lg);
+}
+
+.action p,
+.note {
+  color: var(--ink-soft);
+}
+
+.action button {
+  min-width: 12rem;
+}
+
+.note {
+  padding-top: var(--space-4);
+  border-top: var(--border-width) solid var(--line);
+  font-size: var(--text-sm);
+}
+
+@keyframes enter {
+  from {
+    opacity: 0;
+    transform: translateY(var(--space-2));
+  }
+}
+
+@media (max-width: 40rem) {
+  .page {
+    padding: 0;
+    place-items: stretch;
+  }
+
+  .login {
+    min-height: 100svh;
+    padding: var(--space-6) var(--space-5);
+    align-content: center;
+    border-left: 0;
+    border-top: var(--space-2) solid var(--accent);
+    box-shadow: none;
+  }
+
+  .action button {
+    width: 100%;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .login {
+    animation: none;
+  }
+}

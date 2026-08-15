@@ -1,0 +1,6 @@
+.state {
+  min-height: 100svh;
+  display: grid;
+  place-items: center;
+  padding: var(--space-5);
+}

@@ -1,0 +1,77 @@
+.summary {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: var(--space-4);
+  margin-bottom: var(--space-5);
+}
+
+.summary > div {
+  display: flex;
+  flex-direction: column;
+}
+
+.metric,
+.periodMetric {
+  font-family: var(--font-display);
+  font-weight: 700;
+  line-height: 1;
+}
+
+.metric {
+  font-size: var(--text-2xl);
+}
+
+.periodMetric {
+  font-size: var(--text-lg);
+}
+
+.metricLabel,
+.chartTitle {
+  color: var(--ink-soft);
+}
+
+.chartBlock {
+  margin: var(--space-5) 0;
+}
+
+.chartTitle {
+  margin: 0 0 var(--space-3);
+}
+
+.chart {
+  display: grid;
+  grid-template-columns: repeat(30, minmax(0.25rem, 1fr));
+  align-items: end;
+  gap: var(--space-1);
+  height: 8rem;
+  padding-top: var(--space-3);
+  border-bottom: var(--border-width) solid var(--line);
+}
+
+.bar {
+  display: block;
+  height: var(--bar-height);
+  min-height: 0;
+  border-radius: var(--radius-sm) var(--radius-sm) 0 0;
+  background: var(--accent);
+}
+
+.tableWrap {
+  max-width: 32rem;
+}
+
+@media (max-width: 40rem) {
+  .summary {
+    align-items: flex-start;
+  }
+
+  .chart {
+    gap: var(--space-1);
+    height: 6rem;
+  }
+
+  .tableWrap {
+    max-width: 100%;
+  }
+}

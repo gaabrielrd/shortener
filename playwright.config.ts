@@ -23,6 +23,16 @@ const port = process.env.PLAYWRIGHT_E2E_PORT
 process.env.PLAYWRIGHT_E2E_PORT = String(port);
 const baseURL = `http://127.0.0.1:${port}`;
 
+// O navegador E2E usa somente o projeto demo e a pilha local Firebase.
+process.env.VITE_FIREBASE_API_KEY = 'e2e-public-key';
+process.env.VITE_FIREBASE_AUTH_DOMAIN = 'demo-shortener.firebaseapp.com';
+process.env.VITE_FIREBASE_PROJECT_ID = 'demo-shortener';
+process.env.VITE_FIREBASE_STORAGE_BUCKET = 'demo-shortener.firebasestorage.app';
+process.env.VITE_FIREBASE_MESSAGING_SENDER_ID = '000000000000';
+process.env.VITE_FIREBASE_APP_ID = '1:000000000000:web:e2e';
+process.env.VITE_FIREBASE_USE_EMULATORS = 'true';
+process.env.VITE_PUBLIC_SHORT_BASE_URL = baseURL;
+
 export default defineConfig({
   testDir: './e2e',
   fullyParallel: false,
@@ -49,11 +59,25 @@ export default defineConfig({
       name: 'chromium',
       use: { ...devices['Desktop Chrome'] },
     },
+    {
+      name: 'mobile-chromium',
+      testMatch: /app\.spec\.ts/,
+      use: { ...devices['Pixel 7'] },
+    },
   ],
-  webServer: {
-    command: `npm run build:bundle && npx vite preview --host 127.0.0.1 --port ${port}`,
-    url: baseURL,
-    reuseExistingServer: false,
-    timeout: 120_000,
-  },
+  webServer: [
+    {
+      command:
+        'npm run build:functions && firebase emulators:start --project demo-shortener --only auth,firestore,functions',
+      url: 'http://127.0.0.1:9099/emulator/v1/projects/demo-shortener/config',
+      reuseExistingServer: false,
+      timeout: 120_000,
+    },
+    {
+      command: `npm run build:bundle && npx vite preview --host 127.0.0.1 --port ${port}`,
+      url: baseURL,
+      reuseExistingServer: false,
+      timeout: 120_000,
+    },
+  ],
 });

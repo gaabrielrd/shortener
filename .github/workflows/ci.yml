@@ -13,6 +13,18 @@ concurrency:
 permissions:
   contents: read
 
+# O build valida a configuração obrigatória sem depender de um projeto real.
+# IDs demo- nunca alcançam serviços Firebase que não estejam emulados.
+env:
+  VITE_FIREBASE_API_KEY: ci-public-test-key
+  VITE_FIREBASE_AUTH_DOMAIN: demo-shortener.firebaseapp.com
+  VITE_FIREBASE_PROJECT_ID: demo-shortener
+  VITE_FIREBASE_STORAGE_BUCKET: demo-shortener.firebasestorage.app
+  VITE_FIREBASE_MESSAGING_SENDER_ID: '000000000000'
+  VITE_FIREBASE_APP_ID: 1:000000000000:web:ci
+  VITE_FIREBASE_USE_EMULATORS: 'true'
+  VITE_PUBLIC_SHORT_BASE_URL: http://127.0.0.1:5000
+
 jobs:
   validate:
     name: Validate (Node ${{ matrix.node }})
@@ -21,8 +33,8 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        # 22 é o piso declarado em engines/.nvmrc; 24 antecipa a próxima LTS.
-        node: ['22', '24']
+        # Mesma linha do runtime de Functions e da versão fixada em .nvmrc.
+        node: ['22.22.2']
     steps:
       - uses: actions/checkout@v7
 
@@ -46,7 +58,7 @@ jobs:
         run: npm run validate
 
       - name: Publicar relatório de cobertura
-        if: always() && matrix.node == '22'
+        if: always() && matrix.node == '22.22.2'
         uses: actions/upload-artifact@v7
         with:
           name: coverage
@@ -122,3 +134,29 @@ jobs:
             test-results/
           retention-days: 7
           if-no-files-found: ignore
+
+  firebase:
+    name: Firebase Emulators
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+
+      - uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: '21'
+
+      - name: Fixar npm declarado
+        run: npm install --global "$(node -p "require('./package.json').packageManager")"
+
+      - name: Instalar dependências
+        run: npm ci
+
+      - name: Validar toda a pilha Firebase demo
+        run: npm run test:firebase

@@ -3,6 +3,7 @@ node_modules/
 
 # Build
 dist/
+functions/lib/
 *.tsbuildinfo
 
 # Cobertura e cache
@@ -10,6 +11,11 @@ coverage/
 .eslintcache
 playwright-report/
 test-results/
+.firebase/
+firebase-debug.log
+firebase-debug.*.log
+firestore-debug.log
+ui-debug.log
 
 # Segredos e variáveis locais
 .env

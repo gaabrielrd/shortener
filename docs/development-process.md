@@ -35,12 +35,12 @@ A convenção é verificada pelo hook `commit-msg` (`scripts/check-commit-messag
 
 ## Verificação automática
 
-| Momento      | O que roda                                            |
-| ------------ | ----------------------------------------------------- |
-| `pre-commit` | `lint-staged` nos arquivos alterados                  |
-| `commit-msg` | Convenção da mensagem                                 |
-| `pre-push`   | `typecheck` e `test:unit` (Vitest sem cobertura)      |
-| Pull Request | `validate` em Node 22/24, auditoria e E2E no Chromium |
+| Momento      | O que roda                                              |
+| ------------ | ------------------------------------------------------- |
+| `pre-commit` | `lint-staged` nos arquivos alterados                    |
+| `commit-msg` | Convenção da mensagem                                   |
+| `pre-push`   | `typecheck` e `test:unit` (Vitest sem cobertura)        |
+| Pull Request | `validate` em Node 22.22.2, auditoria e E2E no Chromium |
 
 Os hooks são atalhos para pegar o problema cedo; corrija a causa quando um deles
 falhar. O CI executa os portões completos e é a fonte da verdade.

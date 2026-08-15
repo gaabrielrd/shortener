@@ -1,0 +1,12 @@
+.page {
+  display: grid;
+  place-items: center;
+  min-height: 60vh;
+}
+
+.content {
+  display: grid;
+  gap: var(--space-5);
+  width: min(100%, 38rem);
+  text-align: center;
+}

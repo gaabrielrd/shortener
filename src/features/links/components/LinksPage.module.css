@@ -1,0 +1,108 @@
+.page {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-6);
+}
+
+.backLink,
+.destination,
+.created {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.backLink {
+  width: fit-content;
+}
+
+.form {
+  display: grid;
+  grid-template-columns: minmax(12rem, 0.7fr) minmax(18rem, 1.3fr);
+  gap: var(--space-4);
+  align-items: start;
+}
+
+.form button,
+.form > :not(:first-child, :nth-child(2)) {
+  grid-column: 1 / -1;
+  justify-self: start;
+}
+
+.preview {
+  margin: 0;
+  color: var(--ink-soft);
+  overflow-wrap: anywhere;
+}
+
+.created {
+  flex-wrap: wrap;
+}
+
+.createdResult {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.created strong {
+  color: var(--ink);
+  overflow-wrap: anywhere;
+}
+
+.tableWrap {
+  overflow-x: auto;
+}
+
+.filter {
+  max-width: 20rem;
+}
+
+.actions {
+  display: inline-flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: var(--space-2);
+  white-space: nowrap;
+}
+
+.manageLink {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.slug {
+  color: var(--ink);
+  white-space: nowrap;
+}
+
+.destination {
+  max-width: 26rem;
+}
+
+.destination span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+@media (max-width: 48rem) {
+  .form {
+    grid-template-columns: 1fr;
+  }
+
+  .form button,
+  .form > :not(:first-child, :nth-child(2)) {
+    grid-column: auto;
+  }
+
+  .form button {
+    width: 100%;
+  }
+
+  .actions {
+    align-items: flex-end;
+    flex-direction: column;
+  }
+}

@@ -6,7 +6,19 @@ import reactRefresh from 'eslint-plugin-react-refresh';
 import tseslint from 'typescript-eslint';
 
 export default tseslint.config(
-  { ignores: ['dist', 'coverage'] },
+  { ignores: ['dist', 'coverage', 'functions/lib'] },
+  {
+    // Cloud Functions roda no Node e não pode herdar globais ou regras de React.
+    files: ['functions/**/*.{ts,tsx}'],
+    languageOptions: {
+      globals: globals.node,
+    },
+    rules: {
+      'react-hooks/rules-of-hooks': 'off',
+      'react-hooks/set-state-in-effect': 'off',
+      'react-refresh/only-export-components': 'off',
+    },
+  },
   {
     extends: [js.configs.recommended, ...tseslint.configs.recommendedTypeChecked],
     files: ['**/*.{ts,tsx}'],
@@ -96,7 +108,7 @@ export default tseslint.config(
   {
     // Ferramentas do repositório: rodam no Node, fora do bundle da aplicação.
     // Sem este bloco, `eslint .` aplicaria configuração vazia a scripts/.
-    files: ['scripts/**/*.mjs', '*.config.{js,mjs}'],
+    files: ['scripts/**/*.mjs', 'tests/**/*.mjs', '*.config.{js,mjs}'],
     extends: [js.configs.recommended],
     languageOptions: {
       ecmaVersion: 2023,

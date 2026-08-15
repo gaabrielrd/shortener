@@ -2,7 +2,7 @@
 
 Aplicação web interna para equipes criarem links públicos curtos,
 personalizados e acompanharem analytics simples de cliques. O projeto usa React,
-TypeScript e Vite na interface e terá Firebase para autenticação e backend.
+TypeScript e Vite na interface e Firebase para autenticação e backend.
 
 ## Objetivo
 
@@ -33,9 +33,10 @@ O escopo completo e os critérios de aceite estão em
 
 ## Pré-requisitos
 
-- Node.js 22 (o arquivo `.nvmrc` já indica a versão; com `nvm`, rode `nvm use`)
+- Node.js 22.22.2 (o arquivo `.nvmrc` indica a versão; com `nvm`, rode `nvm use`)
 - npm 10.6.0 (a versão exata declarada em `packageManager`)
 - git
+- Java 11 ou mais recente para o Firebase Emulator Suite
 - Um agente de código (ex.: Claude Code)
 
 ## Criar um novo projeto a partir do template
@@ -89,6 +90,10 @@ npm run dev
 ```
 
 O Vite mostra no terminal o endereço local (algo como `http://localhost:5173`).
+Para testar o fluxo Google sem uma conta real, use `npm run test:e2e`; a suíte
+inicia Auth, Firestore e Functions Emulator e percorre o popup, a criação de
+equipes e links, a cópia do endereço, o isolamento por criador, o ciclo de vida
+com histórico e a gestão de dois níveis de membro.
 
 ## Validação
 
@@ -109,7 +114,7 @@ Além da validação local, o repositório traz portões automáticos:
 | `pre-commit`        | `lint-staged` (ESLint e Prettier nos arquivos alterados) |
 | `commit-msg`        | Convenção da mensagem de commit                          |
 | `pre-push`          | `typecheck` e `test:unit` (Vitest sem cobertura)         |
-| CI (GitHub Actions) | `validate` em Node 22/24, auditoria e E2E no Chromium    |
+| CI (GitHub Actions) | `validate` em Node 22.22.2, auditoria e E2E no Chromium  |
 
 O CI está em `.github/workflows/ci.yml`. Configure a branch principal para
 exigir os checks **Validate** e **E2E (Chromium)** antes do merge. As
@@ -126,6 +131,7 @@ completos e continua sendo a fonte da verdade para integração.
 | `npm run build`                                 | Gera a versão de produção                                           |
 | `npm run lint`                                  | Verifica problemas de código com ESLint                             |
 | `npm run check:architecture`                    | Impede imports que atravessam as fronteiras das features            |
+| `npm run check:firebase-safety`                 | Impede testes fora do projeto demo e valida a matriz de segurança   |
 | `npm run check:docs`                            | Valida links, comandos e referências da documentação                |
 | `npm run check:toolchain`                       | Confere a versão do npm declarada pelo projeto                      |
 | `npm run format`                                | Formata os arquivos com Prettier                                    |
@@ -135,6 +141,15 @@ completos e continua sendo a fonte da verdade para integração.
 | `npm run test:unit`                             | Roda apenas os testes Vitest, sem cobertura                         |
 | `npm run test:coverage`                         | Roda os testes Vitest aplicando os limites de cobertura             |
 | `npm run test:setup`                            | Roda os testes black-box do setup e da arquitetura                  |
+| `npm run test:functions`                        | Roda os testes unitários das Cloud Functions                        |
+| `npm run test:auth-emulator`                    | Valida sessão local e logout no Auth Emulator                       |
+| `npm run test:rules`                            | Valida as Firestore Rules no emulador                               |
+| `npm run test:members-emulator`                 | Valida concorrência administrativa e posse dos links                |
+| `npm run test:invites-emulator`                 | Valida reutilização, expiração e cancelamento de convites           |
+| `npm run test:links-emulator`                   | Valida links, ciclo de vida e contadores concorrentes               |
+| `npm run test:firebase:smoke`                   | Valida Functions e rewrites através do Hosting Emulator             |
+| `npm run test:firebase`                         | Valida toda a pilha Firebase demo em uma única sessão               |
+| `npm run firebase:emulators`                    | Inicia Auth, Firestore, Functions e Hosting locais                  |
 | `npm run test:e2e`                              | Executa o fluxo crítico no Chromium com Playwright                  |
 | `npm run test:e2e:update`                       | Regera as imagens de referência do styleguide                       |
 | `npm run test:watch`                            | Roda os testes em modo contínuo                                     |
@@ -160,6 +175,10 @@ docs/             # esta documentação
 ```
 
 Detalhes em [docs/architecture.md](docs/architecture.md).
+
+Provisionamento, deploy, smoke, rollback, orçamento e métricas do piloto estão
+no [runbook de operação](docs/operations.md). A autorização executável está na
+[matriz de segurança](docs/security-matrix.md).
 
 ## Styleguide
 
@@ -205,9 +224,20 @@ Copie `.env.example` para `.env.local` e preencha os valores. Só variáveis com
 
 A leitura fica concentrada em [src/shared/config/env.ts](src/shared/config/env.ts): declare a variável em `ImportMetaEnv` (`src/vite-env.d.ts`) e, se ela for obrigatória, acrescente a chave em `REQUIRED_KEYS`. Assim uma configuração ausente ou malformada falha no boot, com mensagem dizendo qual variável corrigir, em vez de virar `undefined` em algum ponto distante do código.
 
+Os valores reais deste ambiente ficam em `.env.local`, que é ignorado pelo Git.
+Use `VITE_FIREBASE_USE_EMULATORS=true` durante o desenvolvimento contra
+`demo-shortener`. A configuração Web é pública; segredos pertencem somente ao
+ambiente das Functions.
+Defina `VITE_PUBLIC_SHORT_BASE_URL` com a origem pública HTTP/HTTPS do domínio
+curto; ela é usada para prévia e cópia dos endereços.
+
+No Firebase Console do projeto real, habilite somente o provedor Google em
+Authentication e adicione o domínio publicado à lista de domínios autorizados.
+
 ## Limitações conhecidas
 
-- Firebase ainda será configurado durante a implementação das features.
+- Login Google, equipes, membros, convites, links, histórico, redirecionamento e
+  analytics agregados dos últimos 30 dias UTC estão implementados.
 - O dashboard depende de conexão; não há modo offline.
 - Analytics são agregados e não identificam nem segmentam visitantes.
 - Sem gerenciador global de estado por padrão.

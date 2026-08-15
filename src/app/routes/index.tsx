@@ -1,33 +1,42 @@
-import { createBrowserRouter, type RouteObject } from 'react-router';
 import { StyleguidePage } from '@vitru/styleguide/showcase';
+import { Navigate, createBrowserRouter, type RouteObject } from 'react-router';
 import { App } from '@/app/App';
 import { NotFound, RouteErrorFallback } from '@/app/components/RouteErrorFallback';
-import { HomePage } from '@/features/home';
+import { LoginPage, ProtectedRoute } from '@/features/auth';
+import { LinkDetailPage, LinksPage } from '@/features/links';
+import { InviteEntryPage, InvitesPage, MembersPage, TeamsPage } from '@/features/teams';
 
-/**
- * Definicao das rotas, separada do router para permitir montar a mesma
- * arvore com um router de memoria nos testes.
- */
+/** Definição separada do router para permitir a mesma árvore em testes. */
 export const routes: RouteObject[] = [
   {
-    path: '/',
-    element: <App />,
-    // Captura erros do layout e de qualquer rota filha sem errorElement proprio.
+    path: '/login',
+    element: <LoginPage />,
     errorElement: <RouteErrorFallback />,
+  },
+  {
+    path: '/styleguide',
+    element: <StyleguidePage />,
+    errorElement: <RouteErrorFallback />,
+  },
+  {
+    element: <ProtectedRoute />,
     children: [
       {
-        index: true,
-        element: <HomePage />,
-      },
-      {
-        // Referência viva fornecida pelo pacote compartilhado.
-        path: 'styleguide',
-        element: <StyleguidePage />,
-      },
-      {
-        // Qualquer endereco desconhecido cai aqui, dentro do layout.
-        path: '*',
-        element: <NotFound />,
+        path: '/',
+        element: <App />,
+        errorElement: <RouteErrorFallback />,
+        children: [
+          { index: true, element: <Navigate to="app" replace /> },
+          { path: 'app', element: <TeamsPage /> },
+          { path: 'app/equipes/:teamId', element: <TeamsPage /> },
+          { path: 'app/equipes/:teamId/membros', element: <MembersPage /> },
+          { path: 'app/equipes/:teamId/convites', element: <InvitesPage /> },
+          { path: 'app/equipes/:teamId/links', element: <LinksPage /> },
+          { path: 'app/equipes/:teamId/links/:slug', element: <LinkDetailPage /> },
+          { path: 'invite/:token', element: <InviteEntryPage /> },
+          // A curinga administrativa permanece por último.
+          { path: '*', element: <NotFound /> },
+        ],
       },
     ],
   },

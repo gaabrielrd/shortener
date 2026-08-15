@@ -9,6 +9,8 @@ Testamos o **comportamento observável** da aplicação: o que o usuário vê e 
 - **Unidade**: funções e lógica isoladas (ex.: cálculo, formatação).
 - **Componente**: renderização e interação de componentes, com Vitest + React Testing Library.
 - **Contrato local**: setup transacional, regras arquiteturais, links da documentação e artefato de build.
+- **Backend**: unidades das Functions e autorização das Firestore Security
+  Rules no Emulator Suite.
 - **E2E**: fluxo crítico no Chromium contra o bundle de produção, com
   Playwright.
 - **Identidade visual**: contrato de estilo (valores computados dos tokens) e
@@ -33,6 +35,13 @@ npm run test          # roda os testes uma vez, com limites de cobertura
 npm run test:unit     # roda apenas Vitest, sem cobertura (mais rápido)
 npm run test:coverage # roda Vitest aplicando os limites de cobertura
 npm run test:setup    # testa setup e regras arquiteturais em projetos temporários
+npm run test:functions # roda as unidades do backend
+npm run test:auth-emulator # valida sessão e logout no Auth Emulator
+npm run test:rules    # testa acessos permitidos e negados no Firestore Emulator
+npm run test:members-emulator # testa concorrência e propriedade dos links
+npm run test:invites-emulator # testa reutilização, expiração e cancelamento
+npm run test:links-emulator # testa links, histórico e contadores concorrentes
+npm run test:firebase # combina Rules e smoke de Auth/Firestore/Functions/Hosting
 npm run test:e2e      # testa o fluxo crítico em um navegador Chromium real
 npm run test:e2e:update # regera as imagens de referência do styleguide
 npm run test:watch    # roda em modo contínuo enquanto você edita
@@ -46,6 +55,42 @@ npx playwright install chromium
 ```
 
 O E2E escolhe uma porta efêmera, gera o bundle e serve a aplicação localmente.
+
+Os testes Firebase usam exclusivamente `demo-shortener`. `test:rules` exige
+Java e valida a baseline deny-by-default. `test:members-emulator` dispara duas
+reduções administrativas concorrentes, comprova que resta um administrador e
+que remover o criador não apaga seus links. `test:invites-emulator` controla o
+relógio, reutiliza o mesmo convite com dois UIDs, repete um consumo e bloqueia
+convites vencidos ou cancelados. `test:links-emulator` disputa o mesmo slug em
+duas criações, confirma um único vencedor e verifica que link e histórico
+nascem juntos. A mesma suíte percorre o ciclo de vida, prova a matriz de
+autorização, verifica dois dias UTC e envia uma rajada de oito cliques sem perda
+nem documento individual. `test:firebase:smoke` inicia a pilha completa, chama
+`/api/health`, valida `302`, headers, conteúdo indisponível, falha de contagem,
+rotas SPA e assets através do Hosting Emulator e mede o redirecionamento
+aquecido contra o limite de um segundo. Eles ficam fora do
+`validate` porque inicializam processos de emulador; o backend aplicável ao
+`validate` ainda cobre typecheck, unidade e build.
+
+O E2E principal inicia Auth, Firestore e Functions Emulator, limpa somente o
+projeto `demo-shortener` entre projetos e percorre o widget
+Google falso por popup sem navegar a SPA, confirma o perfil mínimo, cria duas equipes com suas
+associações administrativas e abre uma segunda sessão Google. O administrador
+promove, rebaixa e remove o membro, enquanto a segunda sessão comprova a matriz
+de ações e a revogação imediata. A suíte também alterna contexto, recusa equipe
+manipulada na URL, recarrega a sessão e testa logout, sem credencial real. No
+ciclo do link, também edita destino, desativa, arquiva, encontra pelo filtro,
+restaura e consulta o histórico. Depois chama a Function pública três vezes,
+confirma os três `302` para o destino editado e verifica total e dia UTC no
+detalhe. Os testes de Rules comprovam separadamente que criador e administrador
+leem agregados, enquanto outro membro não lê nem escreve.
+
+A mesma jornada roda em Chromium desktop e em viewport/dispositivo Pixel 7. O
+CI acrescenta um job `Firebase Emulators`, com Java 21, para executar Auth,
+Firestore, Functions e Hosting sem recurso real. `test:firebase` mantém uma
+única sessão da pilha enquanto roda todas as integrações sequencialmente, o que
+evita corrida de portas no desligamento do Java. `check:firebase-safety` falha
+se um teste contém o projeto de produção ou inicia emulador sem `demo-shortener`.
 
 ## Identidade visual
 
@@ -110,10 +155,10 @@ A composição da aplicação tem smoke test em `src/app/tests/`: a rota raiz mo
 
 O setup também é comportamento público do template. Seus testes executam dry-run, personalização, repetição idempotente e rollback em pastas temporárias. A persistência testa migração, backup de dados inválidos, conflitos de revisão e sincronização entre abas. O smoke test serve `dist/` em uma porta efêmera e acessa o HTML e seus assets como um navegador faria.
 
-O smoke E2E complementa essas redes executando o React no Chromium: adiciona e
-remove uma nota usando nomes acessíveis e confirma a rota de fallback. Ele fica
-em um gate separado de `npm run validate` para que a validação local não baixe
-binários de navegador implicitamente.
+O smoke E2E complementa essas redes executando o fluxo Google e de equipes no
+Chromium contra os emuladores. Ele fica em um gate separado de
+`npm run validate` para que a validação local não baixe binários de navegador
+implicitamente.
 
 ## O que NÃO testar
 

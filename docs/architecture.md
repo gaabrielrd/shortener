@@ -51,6 +51,12 @@ compartilhada sob `shared`, sem regras de equipe ou link. A configuração públ
 é lida somente por `shared/config/env.ts`. Credenciais administrativas e outras
 informações secretas existem apenas no ambiente do backend.
 
+A fundação concreta está registrada na [ADR 0015](decisions/0015-firebase-foundation.md):
+`src/shared/services/firebase` inicializa os SDKs Web sob demanda,
+`functions/` isola o runtime Admin, e `firebase.json` mantém todos os emuladores
+no projeto `demo-shortener`. As Rules começam fechadas e só serão abertas por
+feature com testes positivos e negativos.
+
 ### Backend, dados e autorização
 
 Firebase Authentication fornece login Google. Cloud Firestore persiste perfis
@@ -58,6 +64,12 @@ mínimos, equipes, associações, convites, links, histórico e analytics. Cloud
 Functions concentra redirecionamento, consumo de convite e operações que exigem
 coordenação ou atualização atômica. Firebase Security Rules protege qualquer
 acesso direto permitido ao cliente.
+
+A sessão segue a [ADR 0025](decisions/0025-google-authentication-popup.md). O
+`AuthProvider` é montado em `app/providers`, aguarda a primeira resposta do SDK
+e prepara o perfil antes de liberar a árvore protegida. `/login` é pública,
+`/app` é a entrada administrativa e uma rota interna solicitada é preservada
+enquanto o popup Google está aberto. Logout remove a árvore privada imediatamente.
 
 O backend é a fonte da verdade para autorização:
 
@@ -68,10 +80,74 @@ O backend é a fonte da verdade para autorização:
 - convites são reutilizáveis até a data escolhida ou o cancelamento;
 - identificadores são reservados atomicamente e são únicos em todo o sistema.
 
+A base de equipes segue a [ADR 0017](decisions/0017-team-membership-and-active-context.md).
+`createTeam` grava equipe e primeiro administrador em uma transação. O cliente
+consulta somente associações com o próprio UID, busca individualmente as equipes
+autorizadas e representa o contexto ativo em `/app/equipes/{teamId}`. O
+`TeamsProvider` descarta a geração do contexto no logout; manipular a URL não
+amplia acesso.
+
+A gestão de membros segue a
+[ADR 0018](decisions/0018-membership-permissions-and-admin-continuity.md).
+`MembersProvider` acompanha apenas a lista da equipe ativa e chama
+`updateMembership` para promover, rebaixar, remover ou sair. A Function lê ator,
+alvo e administradores na mesma transação; se uma alteração reduziria o total a
+zero, responde com `last-admin`. A remoção apaga somente a associação, de modo
+que links continuam vinculados à equipe e preservam `createdBy` para auditoria.
+
+| Capacidade                         | Administrador | Membro |
+| ---------------------------------- | ------------- | ------ |
+| Ver equipe e lista de membros      | sim           | sim    |
+| Promover, rebaixar ou remover      | sim           | não    |
+| Sair da equipe                     | sim\*         | sim    |
+| Gerenciar qualquer link da equipe  | sim           | não    |
+| Gerenciar apenas os próprios links | sim           | sim    |
+
+\* O último administrador precisa promover outra pessoa antes de sair. Controles
+da interface espelham essa matriz, mas Rules e Functions aplicam a autorização.
+Se uma associação for removida enquanto a tela está aberta, o listener perde a
+leitura e a interface substitui imediatamente os dados por um estado genérico.
+
 Controles ocultos na interface são apenas feedback de experiência e não
 substituem Rules ou Functions. Tokens de convite concedem entrada enquanto
 válidos e, por isso, são tratados como dados sensíveis, não aparecem em
 listagens públicas e podem ser cancelados pelo administrador.
+
+Convites seguem a [ADR 0019](decisions/0019-reusable-invite-tokens.md). O backend
+gera 256 bits aleatórios e persiste apenas o SHA-256 em `inviteTokens/{hash}`.
+`createInvite` e `cancelInvite` revalidam o administrador; `consumeInvite`
+calcula o hash, usa o relógio do servidor e cria a associação `member` em
+transação. `/invite/:token` exige login, mas a rota completa é preservada durante
+o popup Google. A listagem mostra apenas metadados e o segredo completo
+existe no cliente somente na resposta imediata da criação.
+
+Links seguem a [ADR 0020](decisions/0020-global-link-slugs.md). `createLink`
+normaliza o slug, valida um destino HTTP/HTTPS e confirma a associação da equipe
+na mesma transação que reserva `links/{slug}` e cria o primeiro registro de
+histórico. As Rules permitem ao administrador consultar `teamId` inteiro e
+exigem de membros os filtros `teamId` e `createdBy`; o cliente nunca grava a
+coleção diretamente.
+
+O ciclo de vida segue a
+[ADR 0021](decisions/0021-link-lifecycle-and-history.md). Destino e estado são
+alterados por Functions transacionais que autorizam criador ou administrador e
+acrescentam um evento somente quando há mudança real. `active`, `disabled` e
+`archived` preservam slug, autoria, cliques e datas originais; restaurar volta a
+`active`. O histórico é imutável, retido pela vida do link e lido em páginas de
+dez eventos ordenados por timestamp do servidor e ID.
+
+O redirecionamento público segue a
+[ADR 0022](decisions/0022-public-redirect-and-aggregate-clicks.md). A Function
+lê estado e destino e incrementa `totalClicks` e o documento do dia UTC na
+mesma transação. Somente depois responde `302`; falha de leitura ou escrita não
+redireciona. Links inexistentes, desativados e arquivados compartilham o mesmo
+conteúdo indisponível e não geram contagem.
+
+A leitura dos agregados segue a
+[ADR 0023](decisions/0023-authorized-aggregate-analytics.md). A feature
+`analytics` consulta até 30 documentos diários autorizados e preenche os dias
+UTC sem registro com zero. O detalhe de `links` consome apenas sua interface
+pública e mantém edição, total e histórico disponíveis em falha parcial.
 
 ### Fluxos de dados
 
@@ -105,6 +181,11 @@ carregamento, vazio, sucesso e erro permanecem nos limites das features. Escrita
 remota só confirma sucesso após persistência. Conflitos e falhas mantêm o dado
 anterior e oferecem nova tentativa quando segura.
 
+`TeamsProvider` é o provider de composição concreto para a equipe ativa. Ele
+cobre `idle`, `loading`, `empty`, `ready` e `error`, e não persiste a última
+seleção no navegador. A rota é o estado navegável da seleção, enquanto a lista
+retornada pelo backend continua sendo a fonte para aceitar ou recusar o contexto.
+
 As telas usam o kit de `@vitru/styleguide`, preservam a rota `/styleguide` e
 atendem teclado, foco visível, rótulos e mensagens associadas. O dashboard cobre
 equipe vazia, lista autorizada, erro e carregamento. Detalhes cobrem ausência de
@@ -117,6 +198,16 @@ A SPA e o domínio curto são publicados no Firebase Hosting; Firestore, Cloud
 Functions e Authentication formam o backend. O redirecionamento deve começar em
 até 1 segundo em condições normais. Chrome, Edge, Firefox e Safari atuais são os
 navegadores atendidos.
+
+A ordem do Hosting preserva a API de saúde, raiz, login, styleguide, dashboard e
+convites antes da rota pública de um segmento. Arquivos estáticos existentes são
+servidos antes dos rewrites. A medição local aquecida e o procedimento para
+repeti-la no piloto estão em [redirect-performance.md](redirect-performance.md).
+
+Produção usa `southamerica-east1` tanto no Firestore quanto nas Functions. A
+região é explícita no backend, cliente e rewrites, e cada Function tem limites
+de memória, timeout, concorrência e instâncias. Os guardrails completos estão na
+[ADR 0024](decisions/0024-production-region-and-pilot-guardrails.md).
 
 O produto excede deliberadamente o limite inicial do template, que não inclui
 autenticação real nem backend. Essa ampliação foi aprovada porque equipes,

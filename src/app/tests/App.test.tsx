@@ -4,10 +4,41 @@ import { RouterProvider, createMemoryRouter, type RouteObject } from 'react-rout
 import { App } from '@/app/App';
 import { RouteErrorFallback } from '@/app/components/RouteErrorFallback';
 import { routes } from '@/app/routes';
+import { AuthProvider, type AuthService } from '@/features/auth';
+import { TeamsProvider, type TeamsService } from '@/features/teams';
+
+const authenticatedService: AuthService = {
+  subscribe(onUser) {
+    onUser({ uid: 'user-1', displayName: 'Ana Silva', email: 'ana@example.com' });
+    return () => undefined;
+  },
+  ensureProfile: () => Promise.resolve(),
+  startGoogleSignIn: () => Promise.resolve(null),
+  signOut: () => Promise.resolve(null),
+  takeReturnPath: () => null,
+};
+
+const teamsService: TeamsService = {
+  subscribe(_uid, onTeams) {
+    onTeams([{ id: 'team-1', name: 'Comunicação', role: 'admin' }]);
+    return () => undefined;
+  },
+  createTeam: () =>
+    Promise.resolve({
+      ok: true,
+      team: { id: 'team-created', name: 'Equipe Criada', role: 'admin' },
+    }),
+};
 
 function renderAt(path: string, definitions: RouteObject[] = routes) {
   const router = createMemoryRouter(definitions, { initialEntries: [path] });
-  return render(<RouterProvider router={router} />);
+  return render(
+    <AuthProvider service={authenticatedService}>
+      <TeamsProvider service={teamsService}>
+        <RouterProvider router={router} />
+      </TeamsProvider>
+    </AuthProvider>,
+  );
 }
 
 /**
@@ -15,13 +46,13 @@ function renderAt(path: string, definitions: RouteObject[] = routes) {
  * Se um provider ou uma rota quebrar, falha aqui antes de chegar ao build.
  */
 describe('composicao da aplicacao', () => {
-  it('monta a rota raiz com o layout e a pagina inicial', async () => {
-    renderAt('/');
+  it('monta a rota administrativa com sessão e página inicial', async () => {
+    renderAt('/app');
 
     expect(await screen.findByRole('banner')).toBeInTheDocument();
     expect(screen.getByRole('main')).toBeInTheDocument();
-    expect(screen.getByRole('heading', { name: /comandos npm disponíveis/i })).toBeInTheDocument();
-    expect(screen.queryByText(/exemplo: notas/i)).not.toBeInTheDocument();
+    expect(await screen.findByRole('heading', { name: 'Comunicação' })).toBeInTheDocument();
+    expect(screen.getByText('ana@example.com')).toBeInTheDocument();
   });
 
   it('mostra a tela de nao encontrado para um endereco desconhecido', async () => {
