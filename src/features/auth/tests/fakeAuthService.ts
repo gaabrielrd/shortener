@@ -1,10 +1,13 @@
 import { vi } from 'vitest';
 import type { AuthFailure, AuthUser } from '../model/session';
-import type { AuthService } from '../services/authService';
+import type { AuthService, OneTapOptions } from '../services/authService';
 
 export function createFakeAuthService() {
   let userListener: ((user: AuthUser | null) => void) | undefined;
   let errorListener: ((failure: AuthFailure) => void) | undefined;
+  let oneTapCallback: ((idToken: string) => Promise<void>) | undefined;
+  let oneTapErrorCallback: ((failure: AuthFailure) => void) | undefined;
+  const cancelOneTap = vi.fn();
 
   const subscribe = vi.fn(
     (
@@ -21,6 +24,18 @@ export function createFakeAuthService() {
     void returnPath;
     return Promise.resolve(null);
   });
+  const signInWithCredential = vi.fn(
+    (idToken: string, returnPath: string): Promise<AuthFailure | null> => {
+      void idToken;
+      void returnPath;
+      return Promise.resolve(null);
+    },
+  );
+  const initializeGoogleOneTap = vi.fn((options: OneTapOptions): (() => void) => {
+    oneTapCallback = options.onCredential;
+    oneTapErrorCallback = options.onError;
+    return cancelOneTap;
+  });
   const signOut = vi.fn((): Promise<AuthFailure | null> => Promise.resolve(null));
   const takeReturnPath = vi.fn((): string | null => null);
 
@@ -28,6 +43,8 @@ export function createFakeAuthService() {
     subscribe,
     ensureProfile,
     startGoogleSignIn,
+    signInWithCredential,
+    initializeGoogleOneTap,
     signOut,
     takeReturnPath,
   };
@@ -36,6 +53,9 @@ export function createFakeAuthService() {
     service,
     ensureProfile,
     startGoogleSignIn,
+    signInWithCredential,
+    initializeGoogleOneTap,
+    cancelOneTap,
     signOut,
     takeReturnPath,
     emitUser(user: AuthUser | null) {
@@ -43,6 +63,14 @@ export function createFakeAuthService() {
     },
     emitError(failure: AuthFailure) {
       errorListener?.(failure);
+    },
+    async triggerOneTapCredential(idToken: string) {
+      if (oneTapCallback) {
+        await oneTapCallback(idToken);
+      }
+    },
+    triggerOneTapError(failure: AuthFailure) {
+      oneTapErrorCallback?.(failure);
     },
   };
 }

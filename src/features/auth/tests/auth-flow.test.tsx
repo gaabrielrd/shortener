@@ -103,6 +103,52 @@ describe('fluxo de autenticação', () => {
     expect(fake.router.state.location.pathname).toBe('/app/equipes/team-test/links');
   });
 
+  it('inicializa o Google One Tap e conclui a entrada pela credencial', async () => {
+    const fake = renderApp('/app?filtro=meus');
+    act(() => fake.emitUser(null));
+
+    expect(await screen.findByRole('heading', { name: 'Acesso interno' })).toBeInTheDocument();
+    expect(fake.initializeGoogleOneTap).toHaveBeenCalledWith(
+      expect.objectContaining({ returnPath: '/app?filtro=meus' }),
+    );
+
+    await act(async () => {
+      await fake.triggerOneTapCredential('token-one-tap-123');
+    });
+
+    expect(fake.signInWithCredential).toHaveBeenCalledWith('token-one-tap-123', '/app?filtro=meus');
+
+    act(() => fake.emitUser(ANA));
+
+    expect(await screen.findByRole('heading', { name: 'Equipe Teste' })).toBeInTheDocument();
+    expect(fake.router.state.location.pathname).toBe('/app');
+  });
+
+  it('trata falha de credencial do One Tap e exceção inesperada', async () => {
+    const fake = renderApp('/login', (configured) => {
+      configured.signInWithCredential.mockResolvedValueOnce({
+        code: 'auth/provider',
+        message: 'Credencial inválida.',
+      });
+    });
+    act(() => fake.emitUser(null));
+
+    await act(async () => {
+      await fake.triggerOneTapCredential('bad-token');
+    });
+
+    expect(await screen.findByText('Credencial inválida.')).toBeInTheDocument();
+
+    fake.signInWithCredential.mockRejectedValueOnce(new Error('crash'));
+    await act(async () => {
+      await fake.triggerOneTapCredential('crash-token');
+    });
+
+    expect(
+      await screen.findByText('O Google não concluiu a autenticação. Tente novamente.'),
+    ).toBeInTheDocument();
+  });
+
   it('mantém a pessoa desconectada após falha e permite tentar novamente', async () => {
     const fake = renderApp();
     fake.startGoogleSignIn.mockRejectedValue(new Error('provider unavailable'));
@@ -153,6 +199,17 @@ describe('fluxo de autenticação', () => {
       finishSignOut?.();
       await Promise.resolve();
     });
+  });
+
+  it('trata exceção inesperada durante o logout', async () => {
+    const fake = renderApp();
+    fake.signOut.mockRejectedValueOnce(new Error('crash'));
+    act(() => fake.emitUser(ANA));
+    await screen.findByRole('heading', { name: 'Equipe Teste' });
+
+    await fake.user.click(screen.getByRole('button', { name: 'Sair' }));
+
+    expect(await screen.findByText(/A sessão foi ocultada neste dispositivo/i)).toBeInTheDocument();
   });
 
   it('transforma falha de restauração em entrada recuperável', async () => {

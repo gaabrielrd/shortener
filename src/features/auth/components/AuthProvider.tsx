@@ -79,6 +79,40 @@ export function AuthProvider({
     [service],
   );
 
+  const signInWithCredential = useCallback(
+    async (idToken: string, returnPath: string) => {
+      setState({ status: 'authenticating', user: null, error: null });
+      try {
+        const failure = await (service.signInWithCredential?.(idToken, returnPath) ?? null);
+        if (failure !== null) setState({ status: 'error', user: null, error: failure });
+      } catch {
+        setState({
+          status: 'error',
+          user: null,
+          error: {
+            code: 'auth/provider',
+            message: 'O Google não concluiu a autenticação. Tente novamente.',
+          },
+        });
+      }
+    },
+    [service],
+  );
+
+  const initializeOneTap = useCallback(
+    (returnPath: string) => {
+      return (
+        service.initializeGoogleOneTap?.({
+          returnPath,
+          onCredential: async (idToken: string) => {
+            await signInWithCredential(idToken, returnPath);
+          },
+        }) ?? (() => undefined)
+      );
+    },
+    [service, signInWithCredential],
+  );
+
   const leave = useCallback(async () => {
     setState({ status: 'unauthenticated', user: null, error: null });
     try {
@@ -99,8 +133,15 @@ export function AuthProvider({
   const takeReturnPath = useCallback(() => service.takeReturnPath(), [service]);
 
   const value = useMemo<AuthContextValue>(
-    () => ({ ...state, signIn, signOut: leave, takeReturnPath }),
-    [leave, signIn, state, takeReturnPath],
+    () => ({
+      ...state,
+      signIn,
+      signInWithCredential,
+      initializeOneTap,
+      signOut: leave,
+      takeReturnPath,
+    }),
+    [initializeOneTap, leave, signIn, signInWithCredential, state, takeReturnPath],
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

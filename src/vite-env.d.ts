@@ -16,6 +16,7 @@ interface ImportMetaEnv {
   readonly VITE_FIREBASE_APP_ID?: string;
   readonly VITE_FIREBASE_MEASUREMENT_ID?: string;
   readonly VITE_FIREBASE_USE_EMULATORS?: 'true' | 'false';
+  readonly VITE_GOOGLE_CLIENT_ID?: string;
   readonly VITE_PUBLIC_SHORT_BASE_URL?: string;
 }
 

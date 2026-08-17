@@ -23,6 +23,13 @@ export function LoginPage() {
     }
   }, [auth, navigate, requestedPath]);
 
+  useEffect(() => {
+    if (auth.status === 'unauthenticated') {
+      const cleanup = auth.initializeOneTap(requestedPath);
+      return cleanup;
+    }
+  }, [auth, requestedPath]);
+
   const isBusy = auth.status === 'initializing' || auth.status === 'authenticating';
 
   return (

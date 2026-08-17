@@ -31,6 +31,15 @@ describe('createEnv', () => {
     expect(createEnv(raw()).apiUrl).toBeUndefined();
   });
 
+  it('expoe o googleClientId opcional quando configurado', () => {
+    expect(createEnv(raw()).googleClientId).toBeUndefined();
+    expect(createEnv(raw({ VITE_GOOGLE_CLIENT_ID: '   ' })).googleClientId).toBeUndefined();
+    expect(
+      createEnv(raw({ VITE_GOOGLE_CLIENT_ID: ' google-client-id.apps.googleusercontent.com ' }))
+        .googleClientId,
+    ).toBe('google-client-id.apps.googleusercontent.com');
+  });
+
   it('trata string vazia ou so espacos como ausente', () => {
     expect(createEnv(raw({ VITE_API_URL: '   ' })).apiUrl).toBeUndefined();
   });

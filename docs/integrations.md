@@ -52,14 +52,16 @@ contratos estão em `firestore.rules`, `firestore.indexes.json` e
 
 Ative o provedor **Google** em Authentication > Sign-in method no projeto real
 e autorize o domínio que hospedará a aplicação. Não habilite senha, conta
-anônima ou outro provedor para o produto. O cliente usa popup acionado diretamente
-pelo botão de entrada, sem navegar a SPA, e a Function
-`ensureUserProfile` confirma novamente que o token veio de `google.com` antes
-de persistir UID, nome, e-mail, `createdAt` e `updatedAt`.
+anônima ou outro provedor para o produto. O cliente utiliza o Google One Tap
+(Google Identity Services) para login direto in-page quando `VITE_GOOGLE_CLIENT_ID`
+está configurada, e mantém o botão tradicional com popup acionado diretamente pelo
+usuário como fallback (ver [ADR 0025](decisions/0025-google-authentication-popup.md)
+e [ADR 0026](decisions/0026-google-one-tap.md)). A Function `ensureUserProfile`
+confirma novamente que o token veio de `google.com` antes de persistir UID, nome,
+e-mail, `createdAt` e `updatedAt`.
 
 `VITE_FIREBASE_AUTH_DOMAIN` pode manter o domínio `firebaseapp.com` fornecido
-pelo Firebase. O popup evita a dependência de armazenamento entre origens do
-fluxo por redirect; cancelamento, bloqueio do popup e falha de rede voltam para
+pelo Firebase. Cancelamento, bloqueio do popup/prompt e falha de rede voltam para
 a tela de entrada como erros recuperáveis.
 
 No desenvolvimento e E2E, o widget do Auth Emulator cria uma identidade Google

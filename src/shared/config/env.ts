@@ -40,6 +40,7 @@ export interface Env {
   /** Base da API, quando o projeto usa uma. */
   readonly apiUrl: string | undefined;
   readonly publicShortBaseUrl: string;
+  readonly googleClientId: string | undefined;
   readonly firebase: FirebaseEnv;
 }
 
@@ -121,6 +122,7 @@ export function createEnv(raw: ImportMetaEnv): Env {
 
   const apiUrl = readUrl(raw, 'VITE_API_URL', problems);
   const publicShortBaseUrl = readHttpUrl(raw, 'VITE_PUBLIC_SHORT_BASE_URL', problems) ?? '';
+  const googleClientId = readOptional(raw, 'VITE_GOOGLE_CLIENT_ID');
   const useEmulators = readBoolean(raw, 'VITE_FIREBASE_USE_EMULATORS', problems, false);
 
   if (problems.length > 0) throw new EnvValidationError(problems);
@@ -130,6 +132,7 @@ export function createEnv(raw: ImportMetaEnv): Env {
     isProduction: raw.PROD,
     apiUrl,
     publicShortBaseUrl,
+    googleClientId,
     firebase: {
       apiKey: readRequired(raw, 'VITE_FIREBASE_API_KEY'),
       authDomain: readRequired(raw, 'VITE_FIREBASE_AUTH_DOMAIN'),

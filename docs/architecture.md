@@ -70,11 +70,13 @@ Functions concentra redirecionamento, consumo de convite e operações que exige
 coordenação ou atualização atômica. Firebase Security Rules protege qualquer
 acesso direto permitido ao cliente.
 
-A sessão segue a [ADR 0025](decisions/0025-google-authentication-popup.md). O
-`AuthProvider` é montado em `app/providers`, aguarda a primeira resposta do SDK
-e prepara o perfil antes de liberar a árvore protegida. `/login` é pública,
-`/app` é a entrada administrativa e uma rota interna solicitada é preservada
-enquanto o popup Google está aberto. Logout remove a árvore privada imediatamente.
+A sessão segue a [ADR 0025](decisions/0025-google-authentication-popup.md) e a
+[ADR 0026](decisions/0026-google-one-tap.md). O `AuthProvider` é montado em
+`app/providers`, aguarda a primeira resposta do SDK e prepara o perfil antes
+de liberar a árvore protegida. `/login` é pública e inicializa o Google One Tap
+(quando configurado) com fallback para o botão com popup Google, `/app` é a
+entrada administrativa e uma rota interna solicitada é preservada. Logout remove
+a árvore privada imediatamente.
 
 O backend é a fonte da verdade para autorização:
 
