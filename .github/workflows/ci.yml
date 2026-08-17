@@ -107,6 +107,11 @@ jobs:
           node-version-file: .nvmrc
           cache: npm
 
+      - uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: '21'
+
       - name: Fixar npm declarado
         run: npm install --global "$(node -p "require('./package.json').packageManager")"
 
