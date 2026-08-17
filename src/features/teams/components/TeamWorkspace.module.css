@@ -4,14 +4,6 @@
   gap: var(--space-5);
 }
 
-.headerActions {
-  display: flex;
-  align-items: center;
-  justify-content: flex-end;
-  gap: var(--space-3);
-  flex-wrap: wrap;
-}
-
 .contextBar {
   max-width: 24rem;
 }
@@ -53,11 +45,6 @@
 }
 
 @media (max-width: 40rem) {
-  .headerActions,
-  .headerActions button {
-    width: 100%;
-  }
-
   .contextBar {
     max-width: none;
   }

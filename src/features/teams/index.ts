@@ -1,3 +1,4 @@
+export { CreateTeamDialog } from './components/CreateTeamDialog';
 export { TeamsPage } from './components/TeamsPage';
 export { TeamWorkspace } from './components/TeamWorkspace';
 export { MembersPage } from './components/MembersPage';

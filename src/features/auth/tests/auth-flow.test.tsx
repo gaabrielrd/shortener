@@ -191,7 +191,8 @@ describe('fluxo de autenticação', () => {
     act(() => fake.emitUser(ANA));
     await screen.findByRole('heading', { name: 'Equipe Teste' });
 
-    await fake.user.click(screen.getByRole('button', { name: 'Sair' }));
+    await fake.user.click(screen.getByRole('button', { name: /Menu de Ana Silva/i }));
+    await fake.user.click(screen.getByRole('menuitem', { name: 'Sair' }));
 
     expect(await screen.findByRole('heading', { name: 'Acesso interno' })).toBeInTheDocument();
     expect(screen.queryByText('ana@example.com')).not.toBeInTheDocument();
@@ -207,7 +208,8 @@ describe('fluxo de autenticação', () => {
     act(() => fake.emitUser(ANA));
     await screen.findByRole('heading', { name: 'Equipe Teste' });
 
-    await fake.user.click(screen.getByRole('button', { name: 'Sair' }));
+    await fake.user.click(screen.getByRole('button', { name: /Menu de Ana Silva/i }));
+    await fake.user.click(screen.getByRole('menuitem', { name: 'Sair' }));
 
     expect(await screen.findByText(/A sessão foi ocultada neste dispositivo/i)).toBeInTheDocument();
   });

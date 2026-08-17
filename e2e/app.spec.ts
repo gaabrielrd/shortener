@@ -63,7 +63,8 @@ test('entra com Google emulado, persiste perfil e encerra a sessão', async ({
   await expect(page.getByRole('heading', { name: 'Comunicação', exact: true })).toBeVisible();
   await expect(page.getByText('Administrador')).toBeVisible();
 
-  await page.getByRole('button', { name: 'Nova equipe' }).click();
+  await page.getByRole('button', { name: /Menu de Ana Silva/i }).click();
+  await page.getByRole('menuitem', { name: 'Adicionar equipe' }).click();
   await page.getByRole('textbox', { name: 'Nome da nova equipe' }).fill('Eventos');
   await page.getByRole('button', { name: 'Criar equipe' }).click();
   await expect(page.getByRole('heading', { name: 'Eventos', exact: true })).toBeVisible();
@@ -309,7 +310,8 @@ test('entra com Google emulado, persiste perfil e encerra a sessão', async ({
   await expect(page.getByText('Equipe não disponível')).toBeVisible();
   await expect(page.getByText('Comunicação')).toBeHidden();
 
-  await page.getByRole('button', { name: 'Sair' }).click();
+  await page.getByRole('button', { name: /Menu de Ana Silva/i }).click();
+  await page.getByRole('menuitem', { name: 'Sair' }).click();
   await expect(page.getByRole('heading', { name: 'Acesso interno' })).toBeVisible();
   await expect(page.getByText('ana.e2e@example.test')).toBeHidden();
 

@@ -1,5 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { render, screen } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
 import { RouterProvider, createMemoryRouter, type RouteObject } from 'react-router';
 import { App } from '@/app/App';
 import { RouteErrorFallback } from '@/app/components/RouteErrorFallback';
@@ -84,8 +85,25 @@ describe('composicao da aplicacao', () => {
     expect(screen.getByRole('main')).toBeInTheDocument();
     expect(await screen.findByRole('heading', { name: 'Comunicação' })).toBeInTheDocument();
     expect(screen.getByText('ana@example.com')).toBeInTheDocument();
+    expect(screen.queryByRole('link', { name: 'Início' })).not.toBeInTheDocument();
     expect(screen.queryByRole('link', { name: 'Styleguide' })).not.toBeInTheDocument();
     expect(screen.getByRole('link', { name: 'Links' })).toHaveAttribute('aria-current', 'page');
+  });
+
+  it('abre e fecha o dropdown do usuário com opções de adicionar equipe e sair', async () => {
+    const user = userEvent.setup();
+    renderAt('/app');
+
+    const menuTrigger = await screen.findByRole('button', { name: /Menu de Ana Silva/i });
+    expect(screen.queryByRole('menu', { name: 'Opções do usuário' })).not.toBeInTheDocument();
+
+    await user.click(menuTrigger);
+    expect(screen.getByRole('menu', { name: 'Opções do usuário' })).toBeInTheDocument();
+    expect(screen.getByRole('menuitem', { name: 'Adicionar equipe' })).toBeInTheDocument();
+    expect(screen.getByRole('menuitem', { name: 'Sair' })).toBeInTheDocument();
+
+    await user.keyboard('{Escape}');
+    expect(screen.queryByRole('menu', { name: 'Opções do usuário' })).not.toBeInTheDocument();
   });
 
   it('mostra a tela de nao encontrado para um endereco desconhecido', async () => {

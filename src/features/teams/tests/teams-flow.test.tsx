@@ -115,7 +115,8 @@ describe('equipes e contexto ativo', () => {
     expect(screen.getByRole('link', { name: 'Links' })).toHaveAttribute('aria-current', 'page');
     expect(screen.getByRole('link', { name: 'Membros' })).toBeVisible();
     expect(screen.getByRole('link', { name: 'Convites' })).toBeVisible();
-    await fake.user.click(screen.getByRole('button', { name: 'Nova equipe' }));
+    await fake.user.click(screen.getByRole('button', { name: /Menu de Ana Silva/i }));
+    await fake.user.click(screen.getByRole('menuitem', { name: 'Adicionar equipe' }));
     expect(screen.getByRole('dialog', { name: 'Criar nova equipe' })).toBeVisible();
     await fake.user.click(screen.getByRole('button', { name: 'Cancelar' }));
     expect(screen.queryByRole('dialog', { name: 'Criar nova equipe' })).not.toBeInTheDocument();

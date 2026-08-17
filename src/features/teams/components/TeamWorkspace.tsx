@@ -1,8 +1,7 @@
-import { useEffect, useState } from 'react';
+import { useEffect } from 'react';
 import { Badge, Button, ErrorState, LoadingState, PageHeader, Select } from '@vitru/styleguide';
-import { Link2, Plus, UserPlus, Users } from 'lucide-react';
+import { Link2, UserPlus, Users } from 'lucide-react';
 import { Navigate, NavLink, Outlet, useNavigate, useParams } from 'react-router';
-import { CreateTeamDialog } from './CreateTeamDialog';
 import { useTeams } from './teamsContext';
 import styles from './TeamWorkspace.module.css';
 
@@ -10,7 +9,6 @@ export function TeamWorkspace() {
   const teams = useTeams();
   const navigate = useNavigate();
   const { teamId } = useParams<{ teamId: string }>();
-  const [createOpen, setCreateOpen] = useState(false);
   const requestedTeam = teams.teams.find((team) => team.id === teamId) ?? null;
   const selectTeam = teams.selectTeam;
 
@@ -52,15 +50,9 @@ export function TeamWorkspace() {
         title={requestedTeam.name}
         description="Gerencie os links e o acesso das pessoas neste espaço de trabalho."
         actions={
-          <div className={styles.headerActions}>
-            <Badge variant={requestedTeam.role === 'admin' ? 'accent' : 'neutral'}>
-              {requestedTeam.role === 'admin' ? 'Administrador' : 'Membro'}
-            </Badge>
-            <Button type="button" onClick={() => setCreateOpen(true)}>
-              <Plus className="icon icon-sm" aria-hidden="true" />
-              Nova equipe
-            </Button>
-          </div>
+          <Badge variant={requestedTeam.role === 'admin' ? 'accent' : 'neutral'}>
+            {requestedTeam.role === 'admin' ? 'Administrador' : 'Membro'}
+          </Badge>
         }
       />
 
@@ -107,15 +99,6 @@ export function TeamWorkspace() {
       <div className={styles.content}>
         <Outlet />
       </div>
-
-      <CreateTeamDialog
-        open={createOpen}
-        onClose={() => setCreateOpen(false)}
-        onCreated={(createdTeamId) => {
-          setCreateOpen(false);
-          void navigate(`/app/equipes/${createdTeamId}/links`);
-        }}
-      />
     </section>
   );
 }
