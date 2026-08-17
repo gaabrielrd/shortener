@@ -121,7 +121,7 @@ describe('fluxo de autenticação', () => {
     act(() => fake.emitUser(ANA));
 
     expect(await screen.findByRole('heading', { name: 'Equipe Teste' })).toBeInTheDocument();
-    expect(fake.router.state.location.pathname).toBe('/app');
+    expect(fake.router.state.location.pathname).toBe('/app/equipes/team-test/links');
   });
 
   it('trata falha de credencial do One Tap e exceção inesperada', async () => {
