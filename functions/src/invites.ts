@@ -1,7 +1,7 @@
 import { createHash, randomBytes } from 'node:crypto';
-import { getApp, getApps, initializeApp } from 'firebase-admin/app';
-import { getFirestore, Timestamp, type Firestore } from 'firebase-admin/firestore';
+import { Timestamp, type Firestore } from 'firebase-admin/firestore';
 import { HttpsError, onCall } from 'firebase-functions/v2/https';
+import { getAdminFirestore } from './admin.js';
 import type { InviteTokenDocument, MemberDocument } from './contracts/firestore.js';
 import { isGoogleAuthToken } from './profile.js';
 import { CALLABLE_OPTIONS } from './runtime.js';
@@ -190,8 +190,7 @@ function requireGoogleIdentity(request: {
 }
 
 function database(): Firestore {
-  const app = getApps().length > 0 ? getApp() : initializeApp();
-  return getFirestore(app);
+  return getAdminFirestore();
 }
 
 export const createInvite = onCall(CALLABLE_OPTIONS, async (request) => {

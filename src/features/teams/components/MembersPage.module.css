@@ -4,13 +4,6 @@
   gap: var(--space-5);
 }
 
-.backLink {
-  display: inline-flex;
-  align-items: center;
-  gap: var(--space-2);
-  width: fit-content;
-}
-
 .person {
   display: flex;
   flex-direction: column;

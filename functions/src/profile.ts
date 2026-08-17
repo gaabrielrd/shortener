@@ -1,6 +1,6 @@
-import { getApp, getApps, initializeApp } from 'firebase-admin/app';
-import { getFirestore, Timestamp } from 'firebase-admin/firestore';
+import { Timestamp } from 'firebase-admin/firestore';
 import { HttpsError, onCall } from 'firebase-functions/v2/https';
+import { getAdminFirestore } from './admin.js';
 import type { UserDocument } from './contracts/firestore.js';
 import { CALLABLE_OPTIONS } from './runtime.js';
 
@@ -42,8 +42,7 @@ export const ensureUserProfile = onCall(CALLABLE_OPTIONS, async (request) => {
     throw new HttpsError('failed-precondition', 'A conta Google deve fornecer nome e e-mail.');
   }
 
-  const app = getApps().length > 0 ? getApp() : initializeApp();
-  const firestore = getFirestore(app);
+  const firestore = getAdminFirestore();
   const profileRef = firestore.collection('users').doc(uid);
 
   await firestore.runTransaction(async (transaction) => {

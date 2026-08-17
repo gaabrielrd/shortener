@@ -4,7 +4,13 @@ import { RouterProvider, createMemoryRouter } from 'react-router';
 import { describe, expect, it } from 'vitest';
 import { routes } from '@/app/routes';
 import { AuthProvider, type AuthUser } from '@/features/auth';
-import { TeamsProvider, type TeamsService } from '@/features/teams';
+import { LinksProvider, type LinksService } from '@/features/links';
+import {
+  MembersProvider,
+  TeamsProvider,
+  type MembersService,
+  type TeamsService,
+} from '@/features/teams';
 import { createFakeAuthService } from './fakeAuthService';
 
 const ANA: AuthUser = {
@@ -25,6 +31,27 @@ const teamsService: TeamsService = {
     }),
 };
 
+const membersService: MembersService = {
+  subscribe(_teamId, onMembers) {
+    onMembers([]);
+    return () => undefined;
+  },
+  execute: () => Promise.reject(new Error('não usado neste teste')),
+};
+
+const linksService: LinksService = {
+  subscribe(_teamId, _role, _uid, onLinks) {
+    onLinks([]);
+    return () => undefined;
+  },
+  create: () => Promise.reject(new Error('não usado neste teste')),
+  updateDestination: () => Promise.reject(new Error('não usado neste teste')),
+  changeStatus: () => Promise.reject(new Error('não usado neste teste')),
+  loadHistory: () => Promise.reject(new Error('não usado neste teste')),
+  publicUrl: (slug) => `https://go.example.test/${slug}`,
+  copy: () => Promise.resolve(false),
+};
+
 function renderApp(
   path = '/app',
   configure?: (fake: ReturnType<typeof createFakeAuthService>) => void,
@@ -36,7 +63,11 @@ function renderApp(
   render(
     <AuthProvider service={fake.service}>
       <TeamsProvider service={teamsService}>
-        <RouterProvider router={router} />
+        <MembersProvider service={membersService}>
+          <LinksProvider service={linksService}>
+            <RouterProvider router={router} />
+          </LinksProvider>
+        </MembersProvider>
       </TeamsProvider>
     </AuthProvider>,
   );
@@ -69,8 +100,7 @@ describe('fluxo de autenticação', () => {
     act(() => fake.emitUser(ANA));
 
     expect(await screen.findByRole('heading', { name: 'Equipe Teste' })).toBeInTheDocument();
-    expect(fake.router.state.location.pathname).toBe('/app');
-    expect(fake.router.state.location.search).toBe('?filtro=meus');
+    expect(fake.router.state.location.pathname).toBe('/app/equipes/team-test/links');
   });
 
   it('mantém a pessoa desconectada após falha e permite tentar novamente', async () => {

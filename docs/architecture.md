@@ -57,6 +57,11 @@ A fundação concreta está registrada na [ADR 0015](decisions/0015-firebase-fou
 no projeto `demo-shortener`. As Rules começam fechadas e só serão abertas por
 feature com testes positivos e negativos.
 
+No backend, `functions/src/admin.ts` obtém especificamente o app Admin padrão e
+inicializa-o quando necessário. A existência de um app nomeado pelo runtime não
+é tratada como evidência de que `[DEFAULT]` já existe; todas as Functions que
+acessam o Firestore usam essa fronteira compartilhada.
+
 ### Backend, dados e autorização
 
 Firebase Authentication fornece login Google. Cloud Firestore persiste perfis
@@ -83,9 +88,12 @@ O backend é a fonte da verdade para autorização:
 A base de equipes segue a [ADR 0017](decisions/0017-team-membership-and-active-context.md).
 `createTeam` grava equipe e primeiro administrador em uma transação. O cliente
 consulta somente associações com o próprio UID, busca individualmente as equipes
-autorizadas e representa o contexto ativo em `/app/equipes/{teamId}`. O
-`TeamsProvider` descarta a geração do contexto no logout; manipular a URL não
-amplia acesso.
+autorizadas e representa o contexto ativo em `/app/equipes/{teamId}/{secao}`.
+`TeamWorkspace` mantém o seletor, o botão de nova equipe e as abas Links,
+Membros e Convites ao redor das rotas filhas; Links é a seção padrão e Convites
+só aparece para administradores. A criação acontece em um `Dialog` tanto no
+estado vazio quanto no workspace. O `TeamsProvider` descarta a geração do
+contexto no logout; manipular a URL não amplia acesso.
 
 A gestão de membros segue a
 [ADR 0018](decisions/0018-membership-permissions-and-admin-continuity.md).

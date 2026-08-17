@@ -1,6 +1,6 @@
-import { getApp, getApps, initializeApp } from 'firebase-admin/app';
-import { getFirestore, Timestamp } from 'firebase-admin/firestore';
+import { Timestamp } from 'firebase-admin/firestore';
 import { HttpsError, onCall } from 'firebase-functions/v2/https';
+import { getAdminFirestore } from './admin.js';
 import type { MemberDocument, TeamDocument } from './contracts/firestore.js';
 import { isGoogleAuthToken } from './profile.js';
 import { CALLABLE_OPTIONS } from './runtime.js';
@@ -72,8 +72,7 @@ export const createTeam = onCall(CALLABLE_OPTIONS, async (request) => {
   const input = request.data as { readonly name?: unknown } | null;
   const name = normalizeTeamName(input?.name);
   const uid = request.auth.uid;
-  const app = getApps().length > 0 ? getApp() : initializeApp();
-  const firestore = getFirestore(app);
+  const firestore = getAdminFirestore();
   const teamRef = firestore.collection('teams').doc();
   const memberRef = teamRef.collection('members').doc(uid);
   const records = buildInitialTeamRecords(

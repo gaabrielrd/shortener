@@ -1,6 +1,6 @@
-import { getApp, getApps, initializeApp } from 'firebase-admin/app';
-import { getFirestore, Timestamp, type Firestore } from 'firebase-admin/firestore';
+import { Timestamp, type Firestore } from 'firebase-admin/firestore';
 import { HttpsError, onCall } from 'firebase-functions/v2/https';
+import { getAdminFirestore } from './admin.js';
 import type { LinkDocument, LinkHistoryDocument, MemberDocument } from './contracts/firestore.js';
 import { isGoogleAuthToken } from './profile.js';
 import { CALLABLE_OPTIONS } from './runtime.js';
@@ -220,8 +220,7 @@ export async function updateLinkRecord(
 }
 
 function database(): Firestore {
-  const app = getApps().length > 0 ? getApp() : initializeApp();
-  return getFirestore(app);
+  return getAdminFirestore();
 }
 
 export const createLink = onCall(CALLABLE_OPTIONS, async (request) => {

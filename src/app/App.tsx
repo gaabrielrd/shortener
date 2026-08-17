@@ -1,5 +1,5 @@
 import { Button } from '@vitru/styleguide';
-import { Home, LogOut, Palette } from 'lucide-react';
+import { Home, LogOut } from 'lucide-react';
 import { Link, Outlet } from 'react-router';
 import { useAuth } from '@/features/auth';
 import styles from './App.module.css';
@@ -32,10 +32,6 @@ export function App() {
           <Link to="/app">
             <Home className="icon icon-sm" aria-hidden="true" />
             Início
-          </Link>
-          <Link to="/styleguide">
-            <Palette className="icon icon-sm" aria-hidden="true" />
-            Styleguide
           </Link>
         </nav>
       </header>

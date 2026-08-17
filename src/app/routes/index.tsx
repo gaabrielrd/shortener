@@ -4,7 +4,13 @@ import { App } from '@/app/App';
 import { NotFound, RouteErrorFallback } from '@/app/components/RouteErrorFallback';
 import { LoginPage, ProtectedRoute } from '@/features/auth';
 import { LinkDetailPage, LinksPage } from '@/features/links';
-import { InviteEntryPage, InvitesPage, MembersPage, TeamsPage } from '@/features/teams';
+import {
+  InviteEntryPage,
+  InvitesPage,
+  MembersPage,
+  TeamsPage,
+  TeamWorkspace,
+} from '@/features/teams';
 
 /** Definição separada do router para permitir a mesma árvore em testes. */
 export const routes: RouteObject[] = [
@@ -28,11 +34,17 @@ export const routes: RouteObject[] = [
         children: [
           { index: true, element: <Navigate to="app" replace /> },
           { path: 'app', element: <TeamsPage /> },
-          { path: 'app/equipes/:teamId', element: <TeamsPage /> },
-          { path: 'app/equipes/:teamId/membros', element: <MembersPage /> },
-          { path: 'app/equipes/:teamId/convites', element: <InvitesPage /> },
-          { path: 'app/equipes/:teamId/links', element: <LinksPage /> },
-          { path: 'app/equipes/:teamId/links/:slug', element: <LinkDetailPage /> },
+          {
+            path: 'app/equipes/:teamId',
+            element: <TeamWorkspace />,
+            children: [
+              { index: true, element: <Navigate to="links" replace /> },
+              { path: 'links', element: <LinksPage /> },
+              { path: 'links/:slug', element: <LinkDetailPage /> },
+              { path: 'membros', element: <MembersPage /> },
+              { path: 'convites', element: <InvitesPage /> },
+            ],
+          },
           { path: 'invite/:token', element: <InviteEntryPage /> },
           // A curinga administrativa permanece por último.
           { path: '*', element: <NotFound /> },

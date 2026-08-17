@@ -4,6 +4,7 @@ import { createMemoryRouter, RouterProvider } from 'react-router';
 import { describe, expect, it, vi } from 'vitest';
 import { routes } from '@/app/routes';
 import { AuthProvider, type AuthService } from '@/features/auth';
+import { LinksProvider, type LinksService } from '@/features/links';
 import {
   InvitesProvider,
   MembersProvider,
@@ -28,6 +29,18 @@ const membersService: MembersService = {
   subscribe: () => () => undefined,
   execute: () => Promise.resolve({ ok: true }),
 };
+const linksService: LinksService = {
+  subscribe(_teamId, _role, _uid, onLinks) {
+    onLinks([]);
+    return () => undefined;
+  },
+  create: () => Promise.reject(new Error('não usado neste teste')),
+  updateDestination: () => Promise.reject(new Error('não usado neste teste')),
+  changeStatus: () => Promise.reject(new Error('não usado neste teste')),
+  loadHistory: () => Promise.reject(new Error('não usado neste teste')),
+  publicUrl: (slug) => `https://go.example.test/${slug}`,
+  copy: () => Promise.resolve(false),
+};
 
 function renderInvites(
   path: string,
@@ -36,9 +49,10 @@ function renderInvites(
   consumeFailure?: { readonly code: 'invites/expired'; readonly message: string },
 ) {
   const team: Team = { id: 'team-1', name: 'Comunicação', role };
+  let teamAvailable = withTeam;
   const teamsService: TeamsService = {
     subscribe(_uid, onTeams) {
-      onTeams(withTeam ? [team] : []);
+      onTeams(teamAvailable ? [team] : []);
       return () => undefined;
     },
     createTeam: () => Promise.resolve({ ok: true, team }),
@@ -46,6 +60,16 @@ function renderInvites(
   const fake = createFakeInvitesService();
   if (consumeFailure !== undefined) {
     fake.consume.mockResolvedValueOnce({ ok: false, failure: consumeFailure });
+  } else if (!withTeam) {
+    fake.consume.mockImplementationOnce(() => {
+      teamAvailable = true;
+      return Promise.resolve({
+        ok: true,
+        teamId: 'team-1',
+        teamName: 'Comunicação',
+        alreadyMember: false,
+      });
+    });
   }
   const router = createMemoryRouter(routes, { initialEntries: [path] });
   const user = userEvent.setup();
@@ -54,7 +78,9 @@ function renderInvites(
       <TeamsProvider service={teamsService}>
         <MembersProvider service={membersService}>
           <InvitesProvider service={fake.service}>
-            <RouterProvider router={router} />
+            <LinksProvider service={linksService}>
+              <RouterProvider router={router} />
+            </LinksProvider>
           </InvitesProvider>
         </MembersProvider>
       </TeamsProvider>
@@ -103,7 +129,9 @@ describe('fluxo de convites', () => {
     expect(fake.consume).toHaveBeenCalledWith(token);
     expect(screen.queryByText(token)).not.toBeInTheDocument();
     await fake.user.click(screen.getByRole('button', { name: 'Abrir equipe' }));
-    expect(fake.router.state.location.pathname).toBe('/app/equipes/team-1');
+    await vi.waitFor(() =>
+      expect(fake.router.state.location.pathname).toBe('/app/equipes/team-1/links'),
+    );
   });
 
   it('explica convite vencido sem revelar o token', async () => {

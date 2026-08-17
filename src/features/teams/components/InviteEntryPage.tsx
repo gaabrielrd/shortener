@@ -49,7 +49,7 @@ export function InviteEntryPage() {
           <Alert variant="success" title="Acesso confirmado">
             O convite pode continuar sendo usado por outras pessoas até vencer ou ser cancelado.
           </Alert>
-          <Button onClick={() => void navigate(`/app/equipes/${result.teamId}`)}>
+          <Button onClick={() => void navigate(`/app/equipes/${result.teamId}/links`)}>
             <ArrowRight className="icon icon-sm" aria-hidden="true" />
             Abrir equipe
           </Button>

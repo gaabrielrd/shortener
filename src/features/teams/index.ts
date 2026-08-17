@@ -1,4 +1,5 @@
 export { TeamsPage } from './components/TeamsPage';
+export { TeamWorkspace } from './components/TeamWorkspace';
 export { MembersPage } from './components/MembersPage';
 export { InviteEntryPage } from './components/InviteEntryPage';
 export { InvitesPage } from './components/InvitesPage';

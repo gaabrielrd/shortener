@@ -75,7 +75,8 @@ aquecido contra o limite de um segundo. Eles ficam fora do
 O E2E principal inicia Auth, Firestore e Functions Emulator, limpa somente o
 projeto `demo-shortener` entre projetos e percorre o widget
 Google falso por popup sem navegar a SPA, confirma o perfil mínimo, cria duas equipes com suas
-associações administrativas e abre uma segunda sessão Google. O administrador
+associações administrativas pelo modal, confirma Links como aba padrão, percorre
+as abas da equipe e abre uma segunda sessão Google. O administrador
 promove, rebaixa e remove o membro, enquanto a segunda sessão comprova a matriz
 de ações e a revogação imediata. A suíte também alterna contexto, recusa equipe
 manipulada na URL, recarrega a sessão e testa logout, sem credencial real. No

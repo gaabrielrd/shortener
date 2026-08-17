@@ -13,7 +13,7 @@ import {
   Table,
   type TableColumn,
 } from '@vitru/styleguide';
-import { ArrowLeft, Clipboard, ExternalLink, Link2, Plus, Settings } from 'lucide-react';
+import { Clipboard, ExternalLink, Link2, Plus, Settings } from 'lucide-react';
 import { Link, useNavigate, useParams } from 'react-router';
 import { useMembers, useTeams } from '@/features/teams';
 import {
@@ -182,11 +182,6 @@ export function LinksPage() {
             : 'Você vê apenas os links criados por você.'
         }
       />
-      <Link className={styles.backLink} to={`/app/equipes/${requestedTeam.id}`}>
-        <ArrowLeft className="icon icon-sm" aria-hidden="true" />
-        Voltar ao dashboard
-      </Link>
-
       <Card title="Novo link curto" tone="raised">
         <form className={styles.form} onSubmit={(event) => void submit(event)} noValidate>
           <Input

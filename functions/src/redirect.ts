@@ -1,6 +1,6 @@
-import { getApp, getApps, initializeApp } from 'firebase-admin/app';
-import { getFirestore, Timestamp, type Firestore } from 'firebase-admin/firestore';
+import { Timestamp, type Firestore } from 'firebase-admin/firestore';
 import { onRequest } from 'firebase-functions/v2/https';
+import { getAdminFirestore } from './admin.js';
 import type { DailyClicksDocument, LinkDocument } from './contracts/firestore.js';
 import { RESERVED_SLUGS } from './links.js';
 import { PUBLIC_REDIRECT_OPTIONS } from './runtime.js';
@@ -96,8 +96,7 @@ export async function resolveAndCountRedirect(
 }
 
 function database(): Firestore {
-  const app = getApps().length > 0 ? getApp() : initializeApp();
-  return getFirestore(app);
+  return getAdminFirestore();
 }
 
 function setPublicHeaders(response: Parameters<Parameters<typeof onRequest>[0]>[1]): void {

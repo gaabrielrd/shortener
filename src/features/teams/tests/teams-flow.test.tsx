@@ -1,10 +1,11 @@
-import { act, render, screen } from '@testing-library/react';
+import { act, render, screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { RouterProvider, createMemoryRouter } from 'react-router';
 import { describe, expect, it, vi } from 'vitest';
 import { routes } from '@/app/routes';
 import { AuthProvider, type AuthService, type AuthUser } from '@/features/auth';
-import { TeamsProvider } from '@/features/teams';
+import { LinksProvider, type LinksService } from '@/features/links';
+import { MembersProvider, TeamsProvider, type MembersService } from '@/features/teams';
 import { createFakeTeamsService } from './fakeTeamsService';
 
 const authService: AuthService = {
@@ -16,6 +17,27 @@ const authService: AuthService = {
   startGoogleSignIn: () => Promise.resolve(null),
   signOut: () => Promise.resolve(null),
   takeReturnPath: () => null,
+};
+
+const linksService: LinksService = {
+  subscribe(_teamId, _role, _uid, onLinks) {
+    onLinks([]);
+    return () => undefined;
+  },
+  create: () => Promise.reject(new Error('não usado neste teste')),
+  updateDestination: () => Promise.reject(new Error('não usado neste teste')),
+  changeStatus: () => Promise.reject(new Error('não usado neste teste')),
+  loadHistory: () => Promise.reject(new Error('não usado neste teste')),
+  publicUrl: (slug) => `https://go.example.test/${slug}`,
+  copy: () => Promise.resolve(false),
+};
+
+const membersService: MembersService = {
+  subscribe(_teamId, onMembers) {
+    onMembers([]);
+    return () => undefined;
+  },
+  execute: () => Promise.reject(new Error('não usado neste teste')),
 };
 
 function createControlledAuthService() {
@@ -40,7 +62,11 @@ function renderTeams(path = '/app') {
   render(
     <AuthProvider service={authService}>
       <TeamsProvider service={fake.service}>
-        <RouterProvider router={router} />
+        <MembersProvider service={membersService}>
+          <LinksProvider service={linksService}>
+            <RouterProvider router={router} />
+          </LinksProvider>
+        </MembersProvider>
       </TeamsProvider>
     </AuthProvider>,
   );
@@ -58,12 +84,11 @@ describe('equipes e contexto ativo', () => {
       await screen.findByRole('heading', { name: 'Crie seu primeiro espaço de trabalho' }),
     ).toBeInTheDocument();
 
-    const input = screen.getByRole('textbox', { name: /nome da nova equipe/i });
-    await fake.user.tab();
-    await fake.user.tab();
-    await fake.user.tab();
-    await fake.user.tab();
-    expect(input).toHaveFocus();
+    expect(screen.queryByRole('textbox', { name: /nome da nova equipe/i })).not.toBeInTheDocument();
+    await fake.user.click(screen.getByRole('button', { name: 'Criar primeira equipe' }));
+    const dialog = screen.getByRole('dialog');
+    const input = within(dialog).getByRole('textbox', { name: /nome da nova equipe/i });
+    await vi.waitFor(() => expect(input).toHaveFocus());
     await fake.user.keyboard('{Enter}');
     expect(await screen.findByText('Informe o nome da equipe.')).toBeInTheDocument();
     expect(fake.createTeam).not.toHaveBeenCalled();
@@ -73,7 +98,7 @@ describe('equipes e contexto ativo', () => {
 
     expect(await screen.findByRole('heading', { name: 'Comunicação' })).toBeInTheDocument();
     expect(fake.createTeam).toHaveBeenCalledWith('  Comunicação  ');
-    expect(fake.router.state.location.pathname).toBe('/app/equipes/team-1');
+    expect(fake.router.state.location.pathname).toBe('/app/equipes/team-1/links');
   });
 
   it('lista múltiplas equipes e troca todo o contexto visível', async () => {
@@ -87,11 +112,20 @@ describe('equipes e contexto ativo', () => {
     );
 
     expect(await screen.findByRole('heading', { name: 'Comunicação' })).toBeInTheDocument();
+    expect(screen.getByRole('link', { name: 'Links' })).toHaveAttribute('aria-current', 'page');
+    expect(screen.getByRole('link', { name: 'Membros' })).toBeVisible();
+    expect(screen.getByRole('link', { name: 'Convites' })).toBeVisible();
+    await fake.user.click(screen.getByRole('button', { name: 'Nova equipe' }));
+    expect(screen.getByRole('dialog', { name: 'Criar nova equipe' })).toBeVisible();
+    await fake.user.click(screen.getByRole('button', { name: 'Cancelar' }));
+    expect(screen.queryByRole('dialog', { name: 'Criar nova equipe' })).not.toBeInTheDocument();
+    expect(fake.router.state.location.pathname).toBe('/app/equipes/team-a/links');
     await fake.user.selectOptions(screen.getByRole('combobox', { name: 'Equipe ativa' }), 'team-b');
 
     expect(await screen.findByRole('heading', { name: 'Eventos' })).toBeInTheDocument();
     expect(screen.getByText('Membro')).toBeInTheDocument();
-    expect(fake.router.state.location.pathname).toBe('/app/equipes/team-b');
+    expect(fake.router.state.location.pathname).toBe('/app/equipes/team-b/links');
+    expect(screen.queryByRole('link', { name: 'Convites' })).not.toBeInTheDocument();
   });
 
   it('não mostra dados para uma equipe manipulada na URL', async () => {
@@ -125,7 +159,11 @@ describe('equipes e contexto ativo', () => {
     render(
       <AuthProvider service={auth.service}>
         <TeamsProvider service={fake.service}>
-          <RouterProvider router={router} />
+          <MembersProvider service={membersService}>
+            <LinksProvider service={linksService}>
+              <RouterProvider router={router} />
+            </LinksProvider>
+          </MembersProvider>
         </TeamsProvider>
       </AuthProvider>,
     );
@@ -139,7 +177,7 @@ describe('equipes e contexto ativo', () => {
     expect(await screen.findByRole('heading', { name: 'Acesso interno' })).toBeInTheDocument();
     act(() => auth.emit({ uid: 'user-1', displayName: 'Ana', email: 'ana@example.com' }));
 
-    expect(await screen.findByText('Carregando suas equipes...')).toBeInTheDocument();
+    expect(await screen.findByText('Preparando a equipe ativa...')).toBeInTheDocument();
     expect(screen.queryByRole('heading', { name: 'Equipe anterior' })).not.toBeInTheDocument();
   });
 });

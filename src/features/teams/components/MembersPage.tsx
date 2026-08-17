@@ -12,8 +12,8 @@ import {
   Table,
   type TableColumn,
 } from '@vitru/styleguide';
-import { ArrowLeft, LogOut, ShieldCheck, UserMinus, UserRoundCog } from 'lucide-react';
-import { Link, useNavigate, useParams } from 'react-router';
+import { LogOut, ShieldCheck, UserMinus, UserRoundCog } from 'lucide-react';
+import { useNavigate, useParams } from 'react-router';
 import { useAuth } from '@/features/auth';
 import type { TeamMember } from '../model/member';
 import type { TeamRole } from '../model/team';
@@ -184,11 +184,6 @@ export function MembersPage() {
           </Button>
         }
       />
-
-      <Link className={styles.backLink} to={`/app/equipes/${requestedTeam.id}`}>
-        <ArrowLeft className="icon icon-sm" aria-hidden="true" />
-        Voltar ao dashboard
-      </Link>
 
       {members.feedback !== null ? (
         <Alert variant="success" title="Alteração concluída">

@@ -5,7 +5,13 @@ import { App } from '@/app/App';
 import { RouteErrorFallback } from '@/app/components/RouteErrorFallback';
 import { routes } from '@/app/routes';
 import { AuthProvider, type AuthService } from '@/features/auth';
-import { TeamsProvider, type TeamsService } from '@/features/teams';
+import { LinksProvider, type LinksService } from '@/features/links';
+import {
+  MembersProvider,
+  TeamsProvider,
+  type MembersService,
+  type TeamsService,
+} from '@/features/teams';
 
 const authenticatedService: AuthService = {
   subscribe(onUser) {
@@ -30,12 +36,37 @@ const teamsService: TeamsService = {
     }),
 };
 
+const linksService: LinksService = {
+  subscribe(_teamId, _role, _uid, onLinks) {
+    onLinks([]);
+    return () => undefined;
+  },
+  create: () => Promise.reject(new Error('não usado neste teste')),
+  updateDestination: () => Promise.reject(new Error('não usado neste teste')),
+  changeStatus: () => Promise.reject(new Error('não usado neste teste')),
+  loadHistory: () => Promise.reject(new Error('não usado neste teste')),
+  publicUrl: (slug) => `https://go.example.test/${slug}`,
+  copy: () => Promise.resolve(false),
+};
+
+const membersService: MembersService = {
+  subscribe(_teamId, onMembers) {
+    onMembers([]);
+    return () => undefined;
+  },
+  execute: () => Promise.reject(new Error('não usado neste teste')),
+};
+
 function renderAt(path: string, definitions: RouteObject[] = routes) {
   const router = createMemoryRouter(definitions, { initialEntries: [path] });
   return render(
     <AuthProvider service={authenticatedService}>
       <TeamsProvider service={teamsService}>
-        <RouterProvider router={router} />
+        <MembersProvider service={membersService}>
+          <LinksProvider service={linksService}>
+            <RouterProvider router={router} />
+          </LinksProvider>
+        </MembersProvider>
       </TeamsProvider>
     </AuthProvider>,
   );
@@ -53,6 +84,8 @@ describe('composicao da aplicacao', () => {
     expect(screen.getByRole('main')).toBeInTheDocument();
     expect(await screen.findByRole('heading', { name: 'Comunicação' })).toBeInTheDocument();
     expect(screen.getByText('ana@example.com')).toBeInTheDocument();
+    expect(screen.queryByRole('link', { name: 'Styleguide' })).not.toBeInTheDocument();
+    expect(screen.getByRole('link', { name: 'Links' })).toHaveAttribute('aria-current', 'page');
   });
 
   it('mostra a tela de nao encontrado para um endereco desconhecido', async () => {

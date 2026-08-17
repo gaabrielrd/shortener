@@ -25,8 +25,10 @@ não pode deixar uma equipe sem administrador por falha parcial.
 - Manter o `TeamsProvider` dentro da composição da aplicação. Ele expõe apenas
   equipes autorizadas, equipe ativa e operações estáveis da feature; detalhes do
   Firestore não atravessam o `index.ts` público.
-- Representar a equipe ativa na URL `/app/equipes/{teamId}`. Uma identificação
-  ausente ou alheia mostra um estado genérico e nunca dados de outra equipe.
+- Representar a equipe ativa na URL `/app/equipes/{teamId}/{secao}`. A rota sem
+  seção abre Links por padrão; Membros e Convites preservam o mesmo contexto.
+  Uma identificação ausente ou alheia mostra um estado genérico e nunca dados
+  de outra equipe.
 - Não persistir a seleção no navegador nesta versão. Ao sair, a geração da
   sessão é descartada; uma nova entrada aguarda uma nova consulta mesmo quando o
   UID é o mesmo.
@@ -39,4 +41,6 @@ não pode deixar uma equipe sem administrador por falha parcial.
   usuário e busca cada documento autorizado.
 - URLs podem ser compartilhadas internamente sem transformar o identificador da
   rota em autorização.
+- A navegação entre Links, Membros e Convites mantém o cabeçalho e o seletor da
+  equipe ativa; a aba Convites continua restrita a administradores.
 - Membros, alteração de nível, saída e remoção continuam para a próxima task.

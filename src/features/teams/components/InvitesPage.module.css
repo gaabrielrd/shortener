@@ -3,7 +3,6 @@
   gap: var(--space-6);
 }
 
-.backLink,
 .inviteLink {
   display: inline-flex;
   align-items: center;

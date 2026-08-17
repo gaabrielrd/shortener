@@ -2,7 +2,7 @@
 
 ## Gates locais
 
-- [x] `npm run validate` — 102 Web, 37 Functions e 50 contratos
+- [x] `npm run validate` — 102 Web, 38 Functions e 50 contratos
 - [x] `npm run test:firebase` — 26 integrações e smoke, 72,2 ms aquecido
 - [x] `npm run test:e2e` desktop e mobile — 3 passaram, 1 visual foi ignorado por plataforma
 - [x] `npm audit --audit-level=high` — sem high/critical; 10 moderadas transitivas
@@ -15,7 +15,8 @@
 - [ ] App Check em monitoramento
 - [x] Rules e índices publicados — deploy concluído em 15/08/2026
 - [x] Functions publicadas em `southamerica-east1` — 11 funções Node.js 22 de
-      segunda geração criadas em 15/08/2026
+      segunda geração criadas em 15/08/2026; as 10 que usam Firebase Admin
+      foram republicadas após corrigir a inicialização do app padrão
 - [ ] política de limpeza do Artifact Registry — prazo de retenção depende de
       aprovação explícita; o Firebase sugere um dia por padrão
 - [ ] Hosting publicado e smoke autenticado/público concluído — Hosting, cache

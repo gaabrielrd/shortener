@@ -13,8 +13,8 @@ import {
   Table,
   type TableColumn,
 } from '@vitru/styleguide';
-import { ArrowLeft, Ban, Clipboard, Plus } from 'lucide-react';
-import { Link, useNavigate, useParams } from 'react-router';
+import { Ban, Clipboard, Plus } from 'lucide-react';
+import { useNavigate, useParams } from 'react-router';
 import { getClientInviteStatus, validateInviteExpiration, type TeamInvite } from '../model/invite';
 import { useInvites } from './invitesContext';
 import { useTeams } from './teamsContext';
@@ -117,11 +117,6 @@ export function InvitesPage() {
         title={`Convites de ${requestedTeam.name}`}
         description="Um mesmo link pode adicionar várias pessoas como membros até vencer ou ser cancelado."
       />
-      <Link className={styles.backLink} to={`/app/equipes/${requestedTeam.id}`}>
-        <ArrowLeft className="icon icon-sm" aria-hidden="true" />
-        Voltar ao dashboard
-      </Link>
-
       <Alert variant="info" title="Compartilhe com cuidado">
         Qualquer pessoa com o link e uma conta Google poderá entrar na equipe enquanto o convite
         estiver ativo.

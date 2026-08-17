@@ -1,7 +1,6 @@
 import type { Firestore, Transaction } from 'firebase-admin/firestore';
-import { getApp, getApps, initializeApp } from 'firebase-admin/app';
-import { getFirestore } from 'firebase-admin/firestore';
 import { HttpsError, onCall } from 'firebase-functions/v2/https';
+import { getAdminFirestore } from './admin.js';
 import type { MembershipRole } from './contracts/firestore.js';
 import { isGoogleAuthToken } from './profile.js';
 import { CALLABLE_OPTIONS } from './runtime.js';
@@ -122,7 +121,6 @@ export const updateMembership = onCall(CALLABLE_OPTIONS, async (request) => {
   }
 
   const command = normalizeMembershipCommand(request.data, request.auth.uid);
-  const app = getApps().length > 0 ? getApp() : initializeApp();
-  await applyMembershipCommand(getFirestore(app), request.auth.uid, command);
+  await applyMembershipCommand(getAdminFirestore(), request.auth.uid, command);
   return { ok: true };
 });

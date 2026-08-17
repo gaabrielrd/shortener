@@ -56,17 +56,19 @@ test('entra com Google emulado, persiste perfil e encerra a sessão', async ({
   ).toBeVisible();
   await expect(page.getByText('ana.e2e@example.test')).toBeVisible();
 
+  await page.getByRole('button', { name: 'Criar primeira equipe' }).click();
   await page.getByRole('textbox', { name: 'Nome da nova equipe' }).fill('Comunicação');
   await page.keyboard.press('Enter');
-  await page.waitForURL(/\/app\/equipes\/.+$/);
-  await expect(page.getByRole('heading', { name: 'Comunicação' })).toBeVisible();
+  await page.waitForURL(/\/app\/equipes\/.+\/links$/);
+  await expect(page.getByRole('heading', { name: 'Comunicação', exact: true })).toBeVisible();
   await expect(page.getByText('Administrador')).toBeVisible();
 
+  await page.getByRole('button', { name: 'Nova equipe' }).click();
   await page.getByRole('textbox', { name: 'Nome da nova equipe' }).fill('Eventos');
   await page.getByRole('button', { name: 'Criar equipe' }).click();
-  await expect(page.getByRole('heading', { name: 'Eventos' })).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Eventos', exact: true })).toBeVisible();
   await page.getByRole('combobox', { name: 'Equipe ativa' }).selectOption({ label: 'Comunicação' });
-  await expect(page.getByRole('heading', { name: 'Comunicação' })).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Comunicação', exact: true })).toBeVisible();
 
   const profilesResponse = await request.get(
     'http://127.0.0.1:8080/v1/projects/demo-shortener/databases/(default)/documents/users',
@@ -131,7 +133,7 @@ test('entra com Google emulado, persiste perfil e encerra a sessão', async ({
   const communicationTeamId = communicationTeam?.name.split('/').at(-1);
   if (communicationTeamId === undefined) throw new Error('A equipe Comunicação não foi criada.');
 
-  await page.getByRole('link', { name: 'Gerenciar convites' }).click();
+  await page.getByRole('link', { name: 'Convites' }).click();
   const tomorrow = new Date(Date.now() + 24 * 60 * 60 * 1_000).toISOString().slice(0, 16);
   await page.getByLabel('Validade do convite').fill(tomorrow);
   await page.getByRole('button', { name: 'Criar convite' }).click();
@@ -157,9 +159,7 @@ test('entra com Google emulado, persiste perfil e encerra a sessão', async ({
     'teamId',
   ]);
   expect(persistedInvites.documents[0]?.name).not.toContain(rawInviteToken);
-  await page.getByRole('link', { name: 'Voltar ao dashboard' }).click();
-
-  await page.getByRole('link', { name: 'Gerenciar links' }).click();
+  await page.getByRole('link', { name: 'Links' }).click();
   await page.getByRole('textbox', { name: 'Endereço curto' }).fill('comunicacao-oficial');
   await page
     .getByRole('textbox', { name: 'URL de destino' })
@@ -217,7 +217,6 @@ test('entra com Google emulado, persiste perfil e encerra a sessão', async ({
   const analyticsTable = page.getByRole('table', { name: /cliques diários em UTC/i });
   await expect(analyticsTable.getByRole('cell', { name: '3', exact: true })).toBeVisible();
   await page.getByRole('link', { name: 'Voltar aos links' }).click();
-  await page.getByRole('link', { name: 'Voltar ao dashboard' }).click();
 
   const memberContext = await browser.newContext();
   const memberPage = await memberContext.newPage();
@@ -254,8 +253,9 @@ test('entra com Google emulado, persiste perfil e encerra a sessão', async ({
       `http://127.0.0.1:8080/v1/projects/demo-shortener/databases/(default)/documents/` +
       `teams/${communicationTeamId}/members/${memberUid}`;
     await memberPage.getByRole('button', { name: 'Abrir equipe' }).click();
-    await expect(memberPage.getByRole('heading', { name: 'Comunicação' })).toBeVisible();
-    await memberPage.getByRole('link', { name: 'Gerenciar links' }).click();
+    await expect(
+      memberPage.getByRole('heading', { name: 'Comunicação', exact: true }),
+    ).toBeVisible();
     await expect(memberPage.getByText('/comunicacao-oficial')).toBeHidden();
     await memberPage.getByRole('textbox', { name: 'Endereço curto' }).fill('beto-eventos');
     await memberPage
@@ -263,8 +263,7 @@ test('entra com Google emulado, persiste perfil e encerra a sessão', async ({
       .fill('http://example.com/eventos');
     await memberPage.getByRole('button', { name: 'Criar link' }).click();
     await expect(memberPage.getByText('/beto-eventos')).toBeVisible();
-    await memberPage.getByRole('link', { name: 'Voltar ao dashboard' }).click();
-    await memberPage.getByRole('link', { name: 'Ver membros' }).click();
+    await memberPage.getByRole('link', { name: 'Membros' }).click();
     await expect(memberPage.getByText('ana.e2e@example.test')).toBeVisible();
     await expect(
       memberPage.getByRole('row').filter({ hasText: 'beto.e2e@example.test' }),
@@ -272,11 +271,9 @@ test('entra com Google emulado, persiste perfil e encerra a sessão', async ({
     await expect(memberPage.getByRole('button', { name: 'Promover' })).toHaveCount(0);
     await expect(memberPage.getByRole('button', { name: 'Remover' })).toHaveCount(0);
 
-    await page.getByRole('link', { name: 'Gerenciar links' }).click();
     await expect(page.getByText('/comunicacao-oficial')).toBeVisible();
     await expect(page.getByText('/beto-eventos')).toBeVisible();
-    await page.getByRole('link', { name: 'Voltar ao dashboard' }).click();
-    await page.getByRole('link', { name: 'Gerenciar membros' }).click();
+    await page.getByRole('link', { name: 'Membros' }).click();
     const memberRow = page.getByRole('row').filter({ hasText: 'beto.e2e@example.test' });
     await expect(memberRow).toBeVisible();
     await memberRow.getByRole('button', { name: 'Promover' }).click();
@@ -305,7 +302,7 @@ test('entra com Google emulado, persiste perfil e encerra a sessão', async ({
   }
 
   await page.reload();
-  await expect(page.getByRole('heading', { name: 'Comunicação' })).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Comunicação', exact: true })).toBeVisible();
   await expect(page.locator('header').getByText('ana.e2e@example.test')).toBeVisible();
 
   await page.goto('/app/equipes/equipe-alheia');

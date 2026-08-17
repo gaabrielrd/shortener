@@ -1,0 +1,64 @@
+.workspace {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-5);
+}
+
+.headerActions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: var(--space-3);
+  flex-wrap: wrap;
+}
+
+.contextBar {
+  max-width: 24rem;
+}
+
+.tabs {
+  display: flex;
+  gap: var(--space-1);
+  overflow-x: auto;
+  border-bottom: var(--border-width) solid var(--line);
+}
+
+.tab,
+.activeTab {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-3) var(--space-4);
+  border-bottom: calc(var(--border-width) * 2) solid transparent;
+  color: var(--ink-soft);
+  font-weight: var(--weight-semibold);
+  text-decoration: none;
+  white-space: nowrap;
+  transition:
+    color var(--motion-fast) var(--motion-ease),
+    border-color var(--motion-fast) var(--motion-ease);
+}
+
+.tab:hover {
+  color: var(--ink);
+}
+
+.activeTab {
+  border-bottom-color: var(--accent);
+  color: var(--ink);
+}
+
+.content {
+  min-width: 0;
+}
+
+@media (max-width: 40rem) {
+  .headerActions,
+  .headerActions button {
+    width: 100%;
+  }
+
+  .contextBar {
+    max-width: none;
+  }
+}
