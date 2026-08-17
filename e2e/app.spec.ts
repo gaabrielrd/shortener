@@ -160,7 +160,7 @@ test('entra com Google emulado, persiste perfil e encerra a sessão', async ({
     'teamId',
   ]);
   expect(persistedInvites.documents[0]?.name).not.toContain(rawInviteToken);
-  await page.getByRole('link', { name: 'Links' }).click();
+  await page.getByRole('link', { name: 'Links', exact: true }).click();
   await page.getByRole('textbox', { name: 'Endereço curto' }).fill('comunicacao-oficial');
   await page
     .getByRole('textbox', { name: 'URL de destino' })
