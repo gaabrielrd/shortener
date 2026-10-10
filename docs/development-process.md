@@ -56,3 +56,21 @@ Uma tarefa está concluída quando:
 - O CI está verde no Pull Request
 - A documentação foi atualizada quando necessário
 - As alterações estão registradas no Git
+
+## Atualizações de segurança de dependências
+
+O lockfile mantém correções compatíveis de dependências transitivas sem reduzir
+os gates de auditoria, cobertura ou testes. Não use `npm audit fix --force` para
+resolver um alerta: o npm pode sugerir downgrades incompatíveis de Firebase.
+
+O override de `@grpc/grpc-js` para `1.13.6` é limitado a
+`@firebase/firestore`, que ainda declara `~1.9.0`. Essa versão permanece na linha
+major 1 e corrige os avisos GHSA-m9gg-hp2v-232j e GHSA-f596-whhp-79r4. A mudança
+precisa passar pelas integrações Firebase e pela regressão do transporte Node.
+Remova o override quando o SDK adotar uma faixa corrigida compatível.
+
+O alerta GHSA-vfj7-8cjw-p6xm de `braces`, transitivo de `chokidar` usado pelo
+Firebase CLI, ainda não possui release corrigida publicada. A auditoria deve
+continuar falhando enquanto essa dependência vulnerável estiver presente; não
+suprima o aviso nem substitua majors fora das faixas suportadas apenas para
+liberar o merge.
