@@ -56,6 +56,11 @@ npx playwright install chromium
 
 O E2E escolhe uma porta efêmera, gera o bundle e serve a aplicação localmente.
 
+Os testes e scripts Firebase fora do workspace `functions` importam
+`firebase-admin` diretamente. Por isso a raiz declara o SDK como dependência
+de desenvolvimento, alinhado à faixa das Functions, sem depender de hoisting
+acidental do npm.
+
 Os testes Firebase usam exclusivamente `demo-shortener`. `test:rules` exige
 Java e valida a baseline deny-by-default. `test:members-emulator` dispara duas
 reduções administrativas concorrentes, comprova que resta um administrador e
