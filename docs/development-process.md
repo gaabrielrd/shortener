@@ -63,6 +63,15 @@ O lockfile mantém correções compatíveis de dependências transitivas sem red
 os gates de auditoria, cobertura ou testes. Não use `npm audit fix --force` para
 resolver um alerta: o npm pode sugerir downgrades incompatíveis de Firebase.
 
+Vitest e `@vitest/coverage-v8` são atualizados juntos na linha major 4. A versão
+mínima `4.1.11` inclui a correção de GHSA-82fw-gwwq-j7x9 em `@vitest/mocker`,
+também adotada pelo workspace Functions. Confira a árvore instalada e execute
+os gates existentes após regenerar o lockfile com a versão declarada do npm.
+
+TypeScript na raiz e em Functions permanece em `6.0.3`, dentro das faixas
+declaradas nos manifests. O lockfile não deve introduzir outra versão principal
+fora dessas faixas, mesmo quando a instalação termina sem erro.
+
 O override de `@grpc/grpc-js` para `1.13.6` é limitado a
 `@firebase/firestore`, que ainda declara `~1.9.0`. Essa versão permanece na linha
 major 1 e corrige os avisos GHSA-m9gg-hp2v-232j e GHSA-f596-whhp-79r4. A mudança
