@@ -59,7 +59,9 @@ test('mantém a aparência da página do styleguide', async ({ page }) => {
   // Sem referência para esta plataforma o teste é pulado com instrução, em vez
   // de falhar por um arquivo que ninguém gerou ainda. `--update-snapshots`
   // (npm run test:e2e:update) muda o modo e cria a imagem.
-  const criandoReferencia = test.info().config.updateSnapshots !== 'missing';
+  // Playwright também pode expor 'default' ou 'none'; esses modos não
+  // representam um pedido para gerar ou substituir referências.
+  const criandoReferencia = ['all', 'changed'].includes(test.info().config.updateSnapshots);
   test.skip(
     !existsSync(baseline) && !criandoReferencia,
     `Sem imagem de referência para ${process.platform}. Gere com: npm run test:e2e:update`,
