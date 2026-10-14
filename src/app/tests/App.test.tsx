@@ -104,6 +104,28 @@ describe('composicao da aplicacao', () => {
 
     await user.keyboard('{Escape}');
     expect(screen.queryByRole('menu', { name: 'Opções do usuário' })).not.toBeInTheDocument();
+    expect(menuTrigger).toHaveFocus();
+  });
+
+  it('percorre as opções da conta por teclado e oferece acesso ao conteúdo', async () => {
+    const user = userEvent.setup();
+    renderAt('/app');
+    const trigger = await screen.findByRole('button', { name: /Menu de Ana Silva/i });
+    expect(screen.getByRole('link', { name: 'Ir para o conteúdo' })).toHaveAttribute(
+      'href',
+      '#workspace-content',
+    );
+    await user.click(trigger);
+    await user.keyboard('{ArrowDown}');
+    expect(screen.getByRole('menuitem', { name: 'Adicionar equipe' })).toHaveFocus();
+    await user.keyboard('{ArrowDown}');
+    expect(screen.getByRole('menuitem', { name: 'Sair' })).toHaveFocus();
+    await user.keyboard('{Home}');
+    expect(screen.getByRole('menuitem', { name: 'Adicionar equipe' })).toHaveFocus();
+    await user.keyboard('{End}');
+    expect(screen.getByRole('menuitem', { name: 'Sair' })).toHaveFocus();
+    await user.keyboard('{ArrowUp}');
+    expect(screen.getByRole('menuitem', { name: 'Adicionar equipe' })).toHaveFocus();
   });
 
   it('mostra a tela de nao encontrado para um endereco desconhecido', async () => {

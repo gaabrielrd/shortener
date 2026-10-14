@@ -353,3 +353,11 @@ Detalhes em [testing.md](testing.md).
 ## Evolução incremental
 
 O template começa simples de propósito. Adicione estrutura, bibliotecas ou camadas apenas quando um problema real aparecer, e registre a mudança em um ADR (`docs/decisions/`).
+
+## Composição da interface administrativa
+
+O plano de modernização está em [interface-modernization.md](interface-modernization.md).
+`App` mantém o cabeçalho e um `main` com atalho de teclado para o conteúdo.
+`TeamWorkspace` agrupa identidade e seleção da equipe numa faixa compacta,
+seguida das abas autorizadas. Telas filhas cuidam do título da seção e das
+ações próprias, evitando repetir o contexto da equipe.
