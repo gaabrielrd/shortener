@@ -370,3 +370,9 @@ os cabeçalhos acessíveis. A troca de equipe remonta o `Outlet` pelo ID para
 descartar diálogos e feedback do contexto anterior. No detalhe, cópia aparece
 junto ao endereço, destino e analytics são a área principal e ações de estado
 ficam separadas do histórico.
+
+Analytics prioriza total, período e gráfico, com datas nas extremidades. A
+tabela diária fica num `details` nativo, acionável por teclado. Membros e
+convites usam títulos curtos e listas verticais no celular; a criação de
+convite permanece no formulário de validade, sem alteração do token ou das
+permissões. O login usa a marca existente e uma única ação de entrada.

@@ -1,17 +1,15 @@
 .page {
   display: flex;
   flex-direction: column;
-  gap: var(--space-6);
+  gap: var(--space-5);
+  width: min(100%, 48rem);
+  margin: var(--space-6) auto;
 }
-
-.action {
-  display: flex;
-  justify-content: center;
-  margin-top: var(--space-5);
-}
-
 @media (max-width: 40rem) {
-  .action button {
+  .page {
+    margin: var(--space-3) auto;
+  }
+  .page button {
     width: 100%;
   }
 }

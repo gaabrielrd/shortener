@@ -217,6 +217,8 @@ test('entra com Google emulado, persiste perfil e encerra a sessão', async ({
   await clickedLinkRow.getByRole('link', { name: 'Gerenciar' }).click();
   await expect(page.getByText('3', { exact: true }).first()).toBeVisible();
   await expect(page.getByText('nos últimos 30 dias UTC')).toBeVisible();
+  await page.getByText('Ver dados diários').focus();
+  await page.keyboard.press('Enter');
   const analyticsTable = page.getByRole('table', { name: /cliques diários em UTC/i });
   await expect(analyticsTable.getByRole('cell', { name: '3', exact: true })).toBeVisible();
   await page.getByRole('link', { name: 'Voltar aos links' }).click();

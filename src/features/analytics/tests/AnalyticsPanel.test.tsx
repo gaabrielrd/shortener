@@ -26,9 +26,11 @@ describe('AnalyticsPanel', () => {
           ],
         }),
     };
-    renderPanel(service);
+    const { user } = renderPanel(service);
     expect(screen.getByText('8')).toBeVisible();
     expect(await screen.findByText('nos últimos 30 dias UTC')).toBeVisible();
+    expect(screen.queryByRole('table', { name: /cliques diários em UTC/i })).not.toBeVisible();
+    await user.click(screen.getByText('Ver dados diários'));
     const table = screen.getByRole('table', { name: /cliques diários em UTC/i });
     expect(within(table).getByText('15/08/2026')).toBeVisible();
     expect(within(table).getByText('5')).toBeVisible();

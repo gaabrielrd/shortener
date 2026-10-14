@@ -28,13 +28,58 @@
   overflow-x: auto;
 }
 
+.person {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+.tableWrap td {
+  vertical-align: middle;
+}
+.page > header {
+  align-items: center;
+}
 @media (max-width: 40rem) {
-  .actions {
-    display: flex;
+  .page > header {
+    align-items: stretch;
     flex-direction: column;
   }
-
-  .actions button {
+  .page > header button {
     width: 100%;
+  }
+  .tableWrap table,
+  .tableWrap tbody {
+    display: block;
+  }
+  .tableWrap caption {
+    display: block;
+  }
+  .tableWrap thead {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+  }
+  .tableWrap tbody tr {
+    display: grid;
+    gap: var(--space-3);
+    padding: var(--space-4);
+    border-bottom: var(--border-width) solid var(--line);
+  }
+  .tableWrap tbody tr:last-child {
+    border-bottom: none;
+  }
+  .tableWrap tbody td {
+    display: block;
+    border: none;
+    padding: 0;
+    min-width: 0;
+  }
+  .actions {
+    flex-direction: row;
+    justify-content: flex-start;
+  }
+  .actions button {
+    width: auto;
   }
 }

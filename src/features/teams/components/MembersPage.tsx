@@ -175,10 +175,18 @@ export function MembersPage() {
   return (
     <section className={styles.page}>
       <PageHeader
-        title={`Membros de ${requestedTeam.name}`}
-        description="Níveis e acesso são aplicados imediatamente pelo backend."
+        title="Membros"
+        description={
+          isAdministrator
+            ? 'Gerencie as pessoas e os níveis de acesso da equipe.'
+            : 'Pessoas que participam desta equipe.'
+        }
         actions={
-          <Button type="button" variant="danger" onClick={() => setConfirmation({ kind: 'leave' })}>
+          <Button
+            type="button"
+            variant="secondary"
+            onClick={() => setConfirmation({ kind: 'leave' })}
+          >
             <LogOut className="icon icon-sm" aria-hidden="true" />
             Sair da equipe
           </Button>

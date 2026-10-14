@@ -7,14 +7,19 @@
   display: inline-flex;
   align-items: center;
   gap: var(--space-2);
-  color: var(--text-secondary);
-  font-weight: 700;
+  color: var(--ink-soft);
+  font-weight: var(--weight-bold);
 }
 
 .form {
   display: grid;
   gap: var(--space-4);
-  max-width: 32rem;
+  grid-template-columns: minmax(0, 20rem) auto;
+  align-items: end;
+  justify-content: start;
+  padding: var(--space-4);
+  background: var(--paper-2);
+  border-radius: var(--radius-md);
 }
 
 .created {
@@ -42,5 +47,63 @@
   .copyRow > *,
   .actions > * {
     width: 100%;
+  }
+}
+
+.page {
+  min-width: 0;
+}
+.tableWrap td {
+  vertical-align: middle;
+}
+@media (max-width: 40rem) {
+  .form {
+    grid-template-columns: 1fr;
+  }
+  .form button {
+    width: 100%;
+  }
+  .tableWrap table,
+  .tableWrap tbody {
+    display: block;
+  }
+  .tableWrap caption {
+    display: block;
+  }
+  .tableWrap thead {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+  }
+  .tableWrap tbody tr {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    padding: var(--space-4);
+    gap: var(--space-3);
+    border-bottom: var(--border-width) solid var(--line);
+  }
+  .tableWrap tbody tr:last-child {
+    border-bottom: none;
+  }
+  .tableWrap tbody td {
+    display: block;
+    padding: 0;
+    border: none;
+    min-width: 0;
+  }
+  .tableWrap tbody td:first-child::before,
+  .tableWrap tbody td:nth-child(2)::before {
+    display: block;
+    color: var(--ink-soft);
+    font-size: var(--text-xs);
+    margin-bottom: var(--space-1);
+  }
+  .tableWrap tbody td:first-child::before {
+    content: 'Criado em';
+  }
+  .tableWrap tbody td:nth-child(2)::before {
+    content: 'Validade';
   }
 }
