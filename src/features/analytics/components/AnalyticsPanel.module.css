@@ -1,7 +1,9 @@
 .summary {
-  display: flex;
+  display: grid;
+  grid-template-columns: auto 1fr 1fr;
   align-items: center;
-  flex-wrap: wrap;
+  padding-bottom: var(--space-4);
+  border-bottom: var(--border-width) solid var(--line);
   gap: var(--space-4);
   margin-bottom: var(--space-5);
 }
@@ -14,7 +16,7 @@
 .metric,
 .periodMetric {
   font-family: var(--font-display);
-  font-weight: 700;
+  font-weight: var(--weight-bold);
   line-height: 1;
 }
 
@@ -23,7 +25,7 @@
 }
 
 .periodMetric {
-  font-size: var(--text-lg);
+  font-size: var(--text-2xl);
 }
 
 .metricLabel,
@@ -44,7 +46,7 @@
   grid-template-columns: repeat(30, minmax(0.25rem, 1fr));
   align-items: end;
   gap: var(--space-1);
-  height: 8rem;
+  height: 10rem;
   padding-top: var(--space-3);
   border-bottom: var(--border-width) solid var(--line);
 }
@@ -58,7 +60,8 @@
 }
 
 .tableWrap {
-  max-width: 32rem;
+  overflow-x: auto;
+  margin-top: var(--space-4);
 }
 
 @media (max-width: 40rem) {
@@ -73,5 +76,45 @@
 
   .tableWrap {
     max-width: 100%;
+  }
+}
+
+.metricLabel {
+  font-size: var(--text-sm);
+  margin-top: var(--space-1);
+}
+
+.chartTitle {
+  font-size: var(--text-sm);
+}
+.chartAxis {
+  display: flex;
+  justify-content: space-between;
+  gap: var(--space-2);
+  margin-top: var(--space-2);
+  color: var(--ink-soft);
+  font-size: var(--text-xs);
+}
+.dailyData {
+  border-top: var(--border-width) solid var(--line);
+  padding-top: var(--space-3);
+}
+.dailyData summary {
+  cursor: pointer;
+  color: var(--navy);
+  font-size: var(--text-sm);
+  font-weight: var(--weight-medium);
+  width: fit-content;
+}
+.dailyData summary:focus-visible {
+  outline: var(--focus-ring-width) solid var(--accent);
+  outline-offset: var(--focus-ring-offset);
+}
+@media (max-width: 40rem) {
+  .summary {
+    grid-template-columns: 1fr 1fr;
+  }
+  .summary > svg {
+    display: none;
   }
 }

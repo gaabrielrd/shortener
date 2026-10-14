@@ -59,9 +59,7 @@ describe('gestão de membros', () => {
     );
     act(() => fake.emitMembers(TEAM_MEMBERS));
 
-    expect(
-      await screen.findByRole('heading', { name: 'Membros de Comunicação' }),
-    ).toBeInTheDocument();
+    expect(await screen.findByRole('heading', { name: 'Membros' })).toBeInTheDocument();
     expect(screen.getByText('beto@example.com')).toBeInTheDocument();
     await fake.user.click(screen.getByRole('button', { name: 'Promover' }));
     const dialog = screen.getByRole('dialog');

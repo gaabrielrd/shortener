@@ -3,7 +3,6 @@ import {
   Alert,
   Badge,
   Button,
-  Card,
   Dialog,
   EmptyState,
   ErrorState,
@@ -83,7 +82,7 @@ export function InvitesPage() {
       cell: (invite) => {
         const status = getClientInviteStatus(invite);
         return (
-          <Badge variant={status === 'active' ? 'accent' : 'neutral'}>
+          <Badge variant={status === 'active' ? 'success' : 'neutral'}>
             {status === 'active' ? 'Ativo' : status === 'expired' ? 'Vencido' : 'Cancelado'}
           </Badge>
         );
@@ -114,38 +113,38 @@ export function InvitesPage() {
   return (
     <section className={styles.page}>
       <PageHeader
-        title={`Convites de ${requestedTeam.name}`}
-        description="Um mesmo link pode adicionar várias pessoas como membros até vencer ou ser cancelado."
+        title="Convites"
+        description="Crie um convite reutilizável para adicionar pessoas à equipe."
       />
       <Alert variant="info" title="Compartilhe com cuidado">
         Qualquer pessoa com o link e uma conta Google poderá entrar na equipe enquanto o convite
         estiver ativo.
       </Alert>
 
-      <Card title="Novo convite" tone="raised">
-        <form className={styles.form} onSubmit={(event) => void submit(event)} noValidate>
-          <Input
-            label="Validade do convite"
-            name="expiresAt"
-            type="datetime-local"
-            value={expiresAt}
-            error={fieldError ?? undefined}
-            onChange={(event) => {
-              setExpiresAt(event.target.value);
-              setFieldError(null);
-            }}
-          />
-          <Button type="submit" disabled={invites.isCreating}>
-            <Plus className="icon icon-sm" aria-hidden="true" />
-            {invites.isCreating ? 'Criando convite...' : 'Criar convite'}
-          </Button>
-        </form>
-      </Card>
+      <form className={styles.form} onSubmit={(event) => void submit(event)} noValidate>
+        <Input
+          label="Validade do convite"
+          name="expiresAt"
+          type="datetime-local"
+          value={expiresAt}
+          error={fieldError ?? undefined}
+          onChange={(event) => {
+            setExpiresAt(event.target.value);
+            setFieldError(null);
+          }}
+        />
+        <Button type="submit" disabled={invites.isCreating}>
+          <Plus className="icon icon-sm" aria-hidden="true" />
+          {invites.isCreating ? 'Criando convite...' : 'Criar convite'}
+        </Button>
+      </form>
 
       {createdLink !== null ? (
-        <Alert variant="success" title="Convite criado">
+        <div className={styles.createdResult}>
+          <Alert variant="success" title="Convite criado">
+            Copie agora: por segurança, o endereço completo não poderá ser recuperado depois.
+          </Alert>
           <div className={styles.created}>
-            <p>Copie agora: por segurança, o endereço completo não poderá ser recuperado depois.</p>
             <div className={styles.copyRow}>
               <div className={styles.copyField}>
                 <Input label="Link do convite" value={createdLink} readOnly />
@@ -169,7 +168,7 @@ export function InvitesPage() {
             </div>
             {copyFeedback !== null ? <p role="status">{copyFeedback}</p> : null}
           </div>
-        </Alert>
+        </div>
       ) : null}
 
       {invites.error !== null && invites.status !== 'error' ? (

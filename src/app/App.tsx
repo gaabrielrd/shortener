@@ -13,6 +13,7 @@ export function App() {
   const [menuOpen, setMenuOpen] = useState(false);
   const [createTeamOpen, setCreateTeamOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
+  const menuTriggerRef = useRef<HTMLButtonElement>(null);
 
   useEffect(() => {
     if (!menuOpen) return;
@@ -26,6 +27,25 @@ export function App() {
     function handleKeyDown(event: KeyboardEvent) {
       if (event.key === 'Escape') {
         setMenuOpen(false);
+        menuTriggerRef.current?.focus();
+      }
+      if (['ArrowDown', 'ArrowUp', 'Home', 'End'].includes(event.key)) {
+        event.preventDefault();
+        const items = [
+          ...(menuRef.current?.querySelectorAll<HTMLButtonElement>('[role="menuitem"]') ?? []),
+        ];
+        const index = items.findIndex((item) => item === document.activeElement);
+        const next =
+          event.key === 'Home'
+            ? 0
+            : event.key === 'End'
+              ? items.length - 1
+              : event.key === 'ArrowDown'
+                ? (index + 1) % items.length
+                : index < 0
+                  ? items.length - 1
+                  : (index - 1 + items.length) % items.length;
+        items[next]?.focus();
       }
     }
 
@@ -38,69 +58,86 @@ export function App() {
   }, [menuOpen]);
 
   return (
-    <main className={styles.app}>
+    <div className={styles.app}>
+      <a className={styles.skipLink} href="#workspace-content">
+        Ir para o conteúdo
+      </a>
       <header className={styles.header}>
-        <Link to="/app" className={styles.brand} aria-label="Ir para o início do Short Links">
-          <img className={styles.mark} src="/favicon.svg" alt="" width="28" height="28" />
-          <h1>{PROJECT_NAME}</h1>
-        </Link>
+        <div className={styles.headerInner}>
+          <Link to="/app" className={styles.brand} aria-label="Ir para o início do Short Links">
+            <img className={styles.mark} src="/favicon.svg" alt="" width="28" height="28" />
+            <h1>{PROJECT_NAME}</h1>
+          </Link>
 
-        {auth.user ? (
-          <div className={styles.userMenuContainer} ref={menuRef}>
-            <button
-              type="button"
-              className={styles.userMenuTrigger}
-              aria-expanded={menuOpen}
-              aria-haspopup="menu"
-              aria-label={`Menu de ${auth.user.displayName}`}
-              onClick={() => setMenuOpen((open) => !open)}
+          {auth.user ? (
+            <div
+              className={styles.userMenuContainer}
+              ref={menuRef}
+              onBlur={(event) => {
+                if (!event.currentTarget.contains(event.relatedTarget)) setMenuOpen(false);
+              }}
             >
-              <span className={styles.status}>
-                <span className={styles.userName}>{auth.user.displayName}</span>
-                <small className={styles.userEmail}>{auth.user.email}</small>
-              </span>
-              <ChevronDown
-                className={`icon icon-sm ${styles.chevron} ${menuOpen ? styles.chevronOpen : ''}`}
-                aria-hidden="true"
-              />
-            </button>
+              <button
+                ref={menuTriggerRef}
+                type="button"
+                className={styles.userMenuTrigger}
+                aria-expanded={menuOpen}
+                aria-haspopup="menu"
+                aria-label={`Menu de ${auth.user.displayName}`}
+                onClick={() => setMenuOpen((open) => !open)}
+              >
+                <span className={styles.avatar} aria-hidden="true">
+                  {auth.user.displayName.slice(0, 1).toLocaleUpperCase('pt-BR')}
+                </span>
+                <span className={styles.status}>
+                  <span className={styles.userName}>{auth.user.displayName}</span>
+                  <small className={styles.userEmail}>{auth.user.email}</small>
+                </span>
+                <ChevronDown
+                  className={`icon icon-sm ${styles.chevron} ${menuOpen ? styles.chevronOpen : ''}`}
+                  aria-hidden="true"
+                />
+              </button>
 
-            {menuOpen ? (
-              <div className={styles.dropdown} role="menu" aria-label="Opções do usuário">
-                <button
-                  type="button"
-                  role="menuitem"
-                  className={styles.dropdownItem}
-                  onClick={() => {
-                    setMenuOpen(false);
-                    setCreateTeamOpen(true);
-                  }}
-                >
-                  <Plus className="icon icon-sm" aria-hidden="true" />
-                  <span>Adicionar equipe</span>
-                </button>
+              {menuOpen ? (
+                <div className={styles.dropdown} role="menu" aria-label="Opções do usuário">
+                  <button
+                    type="button"
+                    role="menuitem"
+                    className={styles.dropdownItem}
+                    onClick={() => {
+                      setMenuOpen(false);
+                      setCreateTeamOpen(true);
+                    }}
+                  >
+                    <Plus className="icon icon-sm" aria-hidden="true" />
+                    <span>Adicionar equipe</span>
+                  </button>
 
-                <div className={styles.dropdownDivider} role="separator" />
+                  <div className={styles.dropdownDivider} role="separator" />
 
-                <button
-                  type="button"
-                  role="menuitem"
-                  className={`${styles.dropdownItem} ${styles.dropdownItemDanger}`}
-                  onClick={() => {
-                    setMenuOpen(false);
-                    void auth.signOut();
-                  }}
-                >
-                  <LogOut className="icon icon-sm" aria-hidden="true" />
-                  <span>Sair</span>
-                </button>
-              </div>
-            ) : null}
-          </div>
-        ) : null}
+                  <button
+                    type="button"
+                    role="menuitem"
+                    className={`${styles.dropdownItem} ${styles.dropdownItemDanger}`}
+                    onClick={() => {
+                      setMenuOpen(false);
+                      void auth.signOut();
+                    }}
+                  >
+                    <LogOut className="icon icon-sm" aria-hidden="true" />
+                    <span>Sair</span>
+                  </button>
+                </div>
+              ) : null}
+            </div>
+          ) : null}
+        </div>
       </header>
 
-      <Outlet />
+      <main id="workspace-content" className={styles.content} tabIndex={-1}>
+        <Outlet />
+      </main>
 
       <CreateTeamDialog
         open={createTeamOpen}
@@ -110,6 +147,6 @@ export function App() {
           void navigate(`/app/equipes/${createdTeamId}/links`);
         }}
       />
-    </main>
+    </div>
   );
 }

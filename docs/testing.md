@@ -91,7 +91,12 @@ confirma os três `302` para o destino editado e verifica total e dia UTC no
 detalhe. Os testes de Rules comprovam separadamente que criador e administrador
 leem agregados, enquanto outro membro não lê nem escreve.
 
-A mesma jornada roda em Chromium desktop e em viewport/dispositivo Pixel 7. O
+A mesma jornada roda em Chromium desktop e em dispositivo Pixel 7 com viewport
+de 360 × 800 px. Ela verifica URLs e nomes longos, abertura e fechamento do
+diálogo por teclado, retorno de foco e ausência de rolagem horizontal na página.
+Capturas de login, primeiro acesso, criação, links, detalhe, membros e convites
+são anexadas aos resultados em `test-results/`. A revisão da modernização está
+em [review/README.md](review/README.md). O
 CI acrescenta um job `Firebase Emulators`, com Java 21, para executar Auth,
 Firestore, Functions e Hosting sem recurso real. `test:firebase` mantém uma
 única sessão da pilha enquanto roda todas as integrações sequencialmente, o que
@@ -107,12 +112,13 @@ se um teste contém o projeto de produção ou inicia emulador sem `demo-shorten
    determinístico em qualquer sistema operacional e a falha diz exatamente qual
    valor mudou. Roda sempre, inclusive no CI.
 2. **Regressão visual**: compara a página `/styleguide` inteira, pixel a pixel,
-   com a imagem em `e2e/__screenshots__/<plataforma>/`. Pega mudanças de
+   com a imagem em `e2e/__screenshots__/<plataforma>/` (Linux inclui distribuição e versão). Pega mudanças de
    layout e espaçamento que o contrato não vê.
 
-A fonte do sistema muda o resultado, então cada plataforma tem sua própria
-imagem. Quando não existe imagem para a plataforma atual (por exemplo, no Linux
-do CI antes de alguém gerar a primeira), o teste é **pulado** com a instrução,
+A fonte e os controles nativos mudam entre plataformas e distribuições Linux.
+Há referências para macOS e Debian 13. Ubuntu exige sua própria referência;
+a captura Debian não deve ser comparada com a do runner Ubuntu. Quando não existe imagem para a
+plataforma atual, o teste é **pulado** com a instrução,
 em vez de falhar.
 
 Depois de uma mudança visual **intencional**, regere e revise a imagem no diff

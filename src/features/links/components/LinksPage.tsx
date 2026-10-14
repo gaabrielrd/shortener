@@ -1,9 +1,9 @@
-import { useEffect, useState, type FormEvent } from 'react';
+import { useEffect, useId, useRef, useState, type FormEvent } from 'react';
 import {
   Alert,
   Badge,
   Button,
-  Card,
+  Dialog,
   EmptyState,
   ErrorState,
   Input,
@@ -40,6 +40,11 @@ export function LinksPage() {
   const navigate = useNavigate();
   const { teamId } = useParams<{ teamId: string }>();
   const requestedTeam = teams.teams.find((team) => team.id === teamId) ?? null;
+  const [createOpen, setCreateOpen] = useState(false);
+  const createTriggerId = useId();
+  const formId = `${createTriggerId}-form`;
+  const restoreFocusRef = useRef(false);
+  const formRef = useRef<HTMLFormElement>(null);
   const [slug, setSlug] = useState('');
   const [destinationUrl, setDestinationUrl] = useState('');
   const [failure, setFailure] = useState<LinkFailure | null>(null);
@@ -53,6 +58,25 @@ export function LinksPage() {
       selectTeam(requestedTeam.id);
     }
   }, [requestedTeam, selectTeam, teams.activeTeam?.id]);
+
+  useEffect(() => {
+    if (!createOpen && !restoreFocusRef.current) return;
+    restoreFocusRef.current = false;
+    const frame = window.requestAnimationFrame(() => {
+      if (createOpen) formRef.current?.querySelector('input')?.focus();
+      else document.getElementById(createTriggerId)?.focus();
+    });
+    return () => window.cancelAnimationFrame(frame);
+  }, [createOpen, createTriggerId]);
+
+  function closeCreateDialog() {
+    if (links.isCreating) return;
+    restoreFocusRef.current = true;
+    setCreateOpen(false);
+    setSlug('');
+    setDestinationUrl('');
+    setFailure(null);
+  }
 
   if (teams.status === 'loading' || (requestedTeam !== null && teams.activeTeam?.id !== teamId)) {
     return <LoadingState label="Preparando os links da equipe..." />;
@@ -69,6 +93,7 @@ export function LinksPage() {
 
   async function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
+    if (links.isCreating) return;
     const slugFailure = validateSlug(slug);
     if (slugFailure !== null) {
       setFailure(slugFailure);
@@ -86,8 +111,7 @@ export function LinksPage() {
       return;
     }
     setCreatedSlug(result.link.slug);
-    setSlug('');
-    setDestinationUrl('');
+    closeCreateDialog();
     setCopyFeedback(null);
   }
 
@@ -108,21 +132,22 @@ export function LinksPage() {
     {
       key: 'short',
       header: 'Link curto',
-      cell: (item) => <strong className={styles.slug}>/{item.slug}</strong>,
-    },
-    {
-      key: 'destination',
-      header: 'Destino',
       cell: (item) => (
-        <a
-          className={styles.destination}
-          href={item.destinationUrl}
-          target="_blank"
-          rel="noreferrer"
-        >
-          <span>{item.destinationUrl}</span>
-          <ExternalLink className="icon icon-sm" aria-hidden="true" />
-        </a>
+        <div className={styles.linkIdentity}>
+          <Link className={styles.slug} to={`/app/equipes/${requestedTeam.id}/links/${item.slug}`}>
+            /{item.slug}
+          </Link>
+          <a
+            className={styles.destination}
+            href={item.destinationUrl}
+            title={item.destinationUrl}
+            target="_blank"
+            rel="noreferrer"
+          >
+            <span>{item.destinationUrl}</span>
+            <ExternalLink className="icon icon-sm" aria-hidden="true" />
+          </a>
+        </div>
       ),
     },
     {
@@ -139,7 +164,7 @@ export function LinksPage() {
       key: 'status',
       header: 'Estado',
       cell: (item) => (
-        <Badge variant={item.status === 'active' ? 'accent' : 'neutral'}>
+        <Badge variant={item.status === 'active' ? 'success' : 'neutral'}>
           {statusLabel(item.status)}
         </Badge>
       ),
@@ -174,55 +199,92 @@ export function LinksPage() {
 
   return (
     <section className={styles.page}>
-      <PageHeader
-        title={`Links de ${requestedTeam.name}`}
-        description={
-          requestedTeam.role === 'admin'
-            ? 'Você vê todos os links desta equipe.'
-            : 'Você vê apenas os links criados por você.'
-        }
-      />
-      <Card title="Novo link curto" tone="raised">
-        <form className={styles.form} onSubmit={(event) => void submit(event)} noValidate>
-          <Input
-            label="Endereço curto"
-            hint="De 3 a 50 letras, números ou hífens. O endereço não poderá ser reutilizado."
-            name="slug"
-            value={slug}
-            maxLength={50}
-            autoComplete="off"
-            error={failure?.field === 'slug' ? failure.message : undefined}
-            onChange={(event) => {
-              setSlug(event.target.value);
-              setFailure(null);
-            }}
-          />
-          <Input
-            label="URL de destino"
-            hint="Aceita endereços absolutos iniciados por http:// ou https://."
-            name="destinationUrl"
-            type="url"
-            value={destinationUrl}
-            error={failure?.field === 'destinationUrl' ? failure.message : undefined}
-            onChange={(event) => {
-              setDestinationUrl(event.target.value);
-              setFailure(null);
-            }}
-          />
-          {slug.trim().length > 0 ? (
-            <p className={styles.preview}>Prévia: {links.publicUrl(normalizeSlug(slug))}</p>
-          ) : null}
-          {failure !== null && failure.field === undefined ? (
-            <Alert variant="danger" title="Não foi possível criar o link">
-              {failure.message}
-            </Alert>
-          ) : null}
-          <Button type="submit" disabled={links.isCreating}>
-            <Plus className="icon icon-sm" aria-hidden="true" />
-            {links.isCreating ? 'Criando link...' : 'Criar link'}
-          </Button>
-        </form>
-      </Card>
+      <div className={styles.pageHeader}>
+        <PageHeader
+          title="Links"
+          description={
+            requestedTeam.role === 'admin'
+              ? 'Você vê todos os links desta equipe.'
+              : 'Você vê apenas os links criados por você.'
+          }
+          actions={
+            <Button
+              id={createTriggerId}
+              onClick={() => {
+                setCreatedSlug(null);
+                setCopyFeedback(null);
+                setCreateOpen(true);
+              }}
+            >
+              <Plus className="icon icon-sm" aria-hidden="true" />
+              Novo link
+            </Button>
+          }
+        />
+      </div>
+      {createOpen ? (
+        <Dialog
+          open
+          title="Novo link curto"
+          onClose={closeCreateDialog}
+          footer={
+            <>
+              <Button variant="secondary" disabled={links.isCreating} onClick={closeCreateDialog}>
+                Cancelar
+              </Button>
+              <Button type="submit" form={formId} disabled={links.isCreating}>
+                <Plus className="icon icon-sm" aria-hidden="true" />
+                {links.isCreating ? 'Criando link...' : 'Criar link'}
+              </Button>
+            </>
+          }
+        >
+          <form
+            ref={formRef}
+            id={formId}
+            className={styles.form}
+            onSubmit={(event) => void submit(event)}
+            aria-busy={links.isCreating}
+            noValidate
+          >
+            <Input
+              label="URL de destino"
+              hint="Aceita endereços absolutos iniciados por http:// ou https://."
+              disabled={links.isCreating}
+              name="destinationUrl"
+              type="url"
+              value={destinationUrl}
+              error={failure?.field === 'destinationUrl' ? failure.message : undefined}
+              onChange={(event) => {
+                setDestinationUrl(event.target.value);
+                setFailure(null);
+              }}
+            />
+            <Input
+              label="Endereço curto"
+              hint="De 3 a 50 letras, números ou hífens. O endereço não poderá ser reutilizado."
+              disabled={links.isCreating}
+              name="slug"
+              value={slug}
+              maxLength={50}
+              autoComplete="off"
+              error={failure?.field === 'slug' ? failure.message : undefined}
+              onChange={(event) => {
+                setSlug(event.target.value);
+                setFailure(null);
+              }}
+            />
+            {slug.trim().length > 0 ? (
+              <p className={styles.preview}>Prévia: {links.publicUrl(normalizeSlug(slug))}</p>
+            ) : null}
+            {failure !== null && failure.field === undefined ? (
+              <Alert variant="danger" title="Não foi possível criar o link">
+                {failure.message}
+              </Alert>
+            ) : null}
+          </form>
+        </Dialog>
+      ) : null}
 
       {createdUrl !== null ? (
         <div className={styles.createdResult}>
@@ -247,18 +309,23 @@ export function LinksPage() {
         </Alert>
       ) : null}
       {links.status === 'ready' ? (
-        <div className={styles.filter}>
-          <Select
-            label="Filtrar por estado"
-            value={statusFilter}
-            options={[
-              { value: 'all', label: 'Todos' },
-              { value: 'active', label: 'Ativos' },
-              { value: 'disabled', label: 'Desativados' },
-              { value: 'archived', label: 'Arquivados' },
-            ]}
-            onChange={(event) => setStatusFilter(event.target.value)}
-          />
+        <div className={styles.toolbar}>
+          <div className={styles.filter}>
+            <Select
+              label="Filtrar por estado"
+              value={statusFilter}
+              options={[
+                { value: 'all', label: 'Todos' },
+                { value: 'active', label: 'Ativos' },
+                { value: 'disabled', label: 'Desativados' },
+                { value: 'archived', label: 'Arquivados' },
+              ]}
+              onChange={(event) => setStatusFilter(event.target.value)}
+            />
+          </div>
+          <p className={styles.count}>
+            {filteredLinks.length} {filteredLinks.length === 1 ? 'link' : 'links'}
+          </p>
         </div>
       ) : null}
       {links.status === 'idle' || links.status === 'loading' ? (

@@ -1,11 +1,12 @@
 .workspace {
   display: flex;
   flex-direction: column;
-  gap: var(--space-5);
+  gap: var(--space-4);
 }
 
 .contextBar {
-  max-width: 24rem;
+  width: min(100%, 18rem);
+  flex: none;
 }
 
 .tabs {
@@ -27,8 +28,8 @@
   text-decoration: none;
   white-space: nowrap;
   transition:
-    color var(--motion-fast) var(--motion-ease),
-    border-color var(--motion-fast) var(--motion-ease);
+    color var(--transition-fast),
+    border-color var(--transition-fast);
 }
 
 .tab:hover {
@@ -36,6 +37,7 @@
 }
 
 .activeTab {
+  background: var(--paper-2);
   border-bottom-color: var(--accent);
   color: var(--ink);
 }
@@ -47,5 +49,57 @@
 @media (max-width: 40rem) {
   .contextBar {
     max-width: none;
+  }
+}
+
+.workspaceHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: var(--space-5);
+}
+
+.identity {
+  min-width: 0;
+}
+.eyebrow {
+  margin: 0 0 var(--space-2);
+  color: var(--ink-soft);
+  font-size: var(--text-xs);
+  font-weight: var(--weight-medium);
+}
+
+.teamName {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  flex-wrap: wrap;
+}
+
+.teamName h2 {
+  margin: 0;
+  font-size: var(--text-lg);
+  color: var(--navy);
+  overflow-wrap: anywhere;
+}
+
+.tab:focus-visible,
+.activeTab:focus-visible {
+  outline: var(--focus-ring-width) solid var(--accent);
+  outline-offset: calc(-1 * var(--focus-ring-width));
+}
+
+@media (max-width: 40rem) {
+  .workspaceHeader {
+    align-items: stretch;
+    flex-direction: column;
+    gap: var(--space-4);
+  }
+  .contextBar {
+    width: 100%;
+  }
+  .tab,
+  .activeTab {
+    padding: var(--space-3);
   }
 }

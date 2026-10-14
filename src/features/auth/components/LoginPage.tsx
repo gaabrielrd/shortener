@@ -1,5 +1,5 @@
 import { Alert, Button, PageHeader } from '@vitru/styleguide';
-import { Link2, LogIn } from 'lucide-react';
+import { LogIn } from 'lucide-react';
 import { useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router';
 import { safeReturnPath } from '../services/authService';
@@ -34,18 +34,17 @@ export function LoginPage() {
 
   return (
     <main className={styles.page}>
-      <section className={styles.login} aria-labelledby="login-title">
-        <div className={styles.brand} aria-hidden="true">
-          <Link2 className="icon" />
+      <section className={styles.login} aria-label="Acesso interno">
+        <div className={styles.brand}>
+          <img src="/favicon.svg" alt="" width="32" height="32" />
+          <span>Short Links</span>
         </div>
         <PageHeader
-          title="Short Links"
-          description="Entre para criar endereços memoráveis e acompanhar os acessos da sua equipe."
+          title="Acesso interno"
+          description="Crie links curtos, gerencie destinos e acompanhe os acessos da sua equipe."
         />
-
         <div className={styles.action}>
-          <h1 id="login-title">Acesso interno</h1>
-          <p>Use sua conta Google. Nenhuma senha é armazenada pelo Short Links.</p>
+          <p>Entre com sua conta Google para acessar suas equipes.</p>
 
           {auth.error ? (
             <Alert variant="danger" title="Não foi possível entrar">
@@ -59,7 +58,7 @@ export function LoginPage() {
           </Button>
         </div>
 
-        <p className={styles.note}>O acesso administrativo exige uma sessão válida.</p>
+        <p className={styles.note}>Recebeu um convite? Entre para acessar a equipe.</p>
       </section>
     </main>
   );

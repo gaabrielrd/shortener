@@ -1,103 +1,205 @@
 .page {
   display: flex;
   flex-direction: column;
-  gap: var(--space-6);
+  gap: var(--space-5);
+  min-width: 0;
 }
-
-.destination,
-.created {
-  display: inline-flex;
+.pageHeader > div {
   align-items: center;
-  gap: var(--space-2);
 }
-
 .form {
   display: grid;
-  grid-template-columns: minmax(12rem, 0.7fr) minmax(18rem, 1.3fr);
-  gap: var(--space-4);
-  align-items: start;
+  gap: var(--space-5);
 }
-
-.form button,
-.form > :not(:first-child, :nth-child(2)) {
-  grid-column: 1 / -1;
-  justify-self: start;
-}
-
 .preview {
   margin: 0;
+  padding: var(--space-3);
+  background: var(--paper-2);
+  border-radius: var(--radius-sm);
   color: var(--ink-soft);
+  font-size: var(--text-sm);
   overflow-wrap: anywhere;
 }
-
-.created {
-  flex-wrap: wrap;
-}
-
 .createdResult {
-  display: flex;
-  flex-direction: column;
+  display: grid;
   gap: var(--space-3);
 }
-
+.created {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  flex-wrap: wrap;
+}
 .created strong {
   color: var(--ink);
   overflow-wrap: anywhere;
 }
-
-.tableWrap {
-  overflow-x: auto;
+.toolbar {
+  display: flex;
+  align-items: end;
+  justify-content: space-between;
+  gap: var(--space-4);
 }
-
 .filter {
-  max-width: 20rem;
+  width: min(100%, 16rem);
 }
-
-.actions {
-  display: inline-flex;
-  align-items: center;
-  justify-content: flex-end;
-  gap: var(--space-2);
+.count {
+  margin: 0 0 var(--space-2);
+  color: var(--ink-soft);
+  font-size: var(--text-sm);
   white-space: nowrap;
 }
-
-.manageLink {
-  display: inline-flex;
-  align-items: center;
-  gap: var(--space-2);
+.tableWrap {
+  min-width: 0;
 }
-
+.tableWrap table {
+  width: 100%;
+  table-layout: fixed;
+}
+.tableWrap th:first-child {
+  width: 34%;
+}
+.tableWrap th:nth-child(2) {
+  width: 13%;
+}
+.tableWrap th:nth-child(3) {
+  width: 18%;
+}
+.tableWrap th:nth-child(4) {
+  width: 12%;
+}
+.tableWrap th:last-child {
+  width: 23%;
+}
+.tableWrap td {
+  vertical-align: middle;
+  overflow-wrap: anywhere;
+}
+.tableWrap tbody tr {
+  transition: background-color var(--transition-fast);
+}
+.tableWrap tbody tr:hover {
+  background: var(--paper-2);
+}
+.linkIdentity {
+  display: grid;
+  gap: var(--space-2);
+  min-width: 0;
+}
 .slug {
-  color: var(--ink);
-  white-space: nowrap;
+  color: var(--navy);
+  font-weight: var(--weight-semibold);
+  text-decoration: none;
+  overflow-wrap: anywhere;
 }
-
+.slug:hover {
+  text-decoration: underline;
+}
 .destination {
-  max-width: 26rem;
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  color: var(--ink-soft);
+  font-size: var(--text-sm);
+  min-width: 0;
 }
-
 .destination span {
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
+.destination svg {
+  flex: none;
+}
+.actions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  flex-wrap: wrap;
+  gap: var(--space-3);
+}
+.manageLink {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  font-size: var(--text-sm);
+}
 
-@media (max-width: 48rem) {
-  .form {
-    grid-template-columns: 1fr;
+@media (max-width: 60rem) {
+  .tableWrap table,
+  .tableWrap tbody {
+    display: block;
   }
-
-  .form button,
-  .form > :not(:first-child, :nth-child(2)) {
-    grid-column: auto;
+  .tableWrap thead {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    overflow: hidden;
+    clip-path: inset(50%);
   }
+  .tableWrap caption {
+    display: block;
+  }
+  .tableWrap tbody tr {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    padding: var(--space-4);
+    gap: var(--space-3);
+    border-bottom: var(--border-width) solid var(--line);
+  }
+  .tableWrap tbody tr:last-child {
+    border-bottom: none;
+  }
+  .tableWrap tbody td {
+    display: block;
+    padding: 0;
+    border: none;
+    min-width: 0;
+  }
+  .tableWrap tbody td:first-child,
+  .tableWrap tbody td:last-child {
+    grid-column: 1 / -1;
+  }
+  .tableWrap tbody td:nth-child(2)::before,
+  .tableWrap tbody td:nth-child(3)::before {
+    display: block;
+    color: var(--ink-soft);
+    font-size: var(--text-xs);
+    margin-bottom: var(--space-1);
+  }
+  .tableWrap tbody td:nth-child(2)::before {
+    content: 'Criador';
+  }
+  .tableWrap tbody td:nth-child(3)::before {
+    content: 'Criado em';
+  }
+  .destination span {
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    white-space: normal;
+    overflow-wrap: anywhere;
+  }
+  .actions {
+    justify-content: flex-start;
+  }
+}
 
-  .form button {
+@media (max-width: 40rem) {
+  .pageHeader > div {
+    align-items: stretch;
+    flex-direction: column;
+  }
+  .pageHeader > div > div:last-child,
+  .pageHeader button {
     width: 100%;
   }
-
-  .actions {
-    align-items: flex-end;
-    flex-direction: column;
+  .created {
+    align-items: flex-start;
+  }
+  .created button {
+    width: 100%;
   }
 }

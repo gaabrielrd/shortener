@@ -1,6 +1,18 @@
-import { expect, test, type Page } from '@playwright/test';
+import { expect, test, type Page, type TestInfo } from '@playwright/test';
 
 test.setTimeout(90_000);
+
+async function captureReview(page: Page, testInfo: TestInfo, screen: string) {
+  await page.evaluate(async () => {
+    await document.fonts.ready;
+  });
+  expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(
+    true,
+  );
+  const path = testInfo.outputPath(`${screen}.png`);
+  await page.screenshot({ path, fullPage: true, animations: 'disabled' });
+  await testInfo.attach(screen, { path, contentType: 'image/png' });
+}
 
 async function completeGooglePopup(
   popup: Page,
@@ -8,15 +20,12 @@ async function completeGooglePopup(
   displayName: string,
   normalizeMobileViewport: boolean,
 ) {
+  await popup.waitForLoadState('load');
   await popup.bringToFront();
   if (normalizeMobileViewport) await popup.setViewportSize({ width: 600, height: 800 });
   const addAccount = popup.getByRole('button', { name: 'Add new account' });
   await addAccount.click();
   const emailInput = popup.locator('#email-input');
-  if (!(await emailInput.isVisible())) {
-    await popup.bringToFront();
-    await addAccount.click({ force: true });
-  }
   await expect(emailInput).toBeVisible();
   await emailInput.fill(email);
   await popup.locator('#display-name-input').fill(displayName);
@@ -42,6 +51,7 @@ test('entra com Google emulado, persiste perfil e encerra a sessão', async ({
   await page.goto('/app?filtro=meus');
 
   await expect(page.getByRole('heading', { name: 'Acesso interno' })).toBeVisible();
+  await captureReview(page, testInfo, 'login');
   await expect(page.getByRole('heading', { name: 'Visão geral' })).toBeHidden();
 
   const ownerPopupPromise = page.waitForEvent('popup');
@@ -55,6 +65,7 @@ test('entra com Google emulado, persiste perfil e encerra a sessão', async ({
     page.getByRole('heading', { name: 'Crie seu primeiro espaço de trabalho' }),
   ).toBeVisible();
   await expect(page.getByText('ana.e2e@example.test')).toBeVisible();
+  await captureReview(page, testInfo, 'first-team');
 
   await page.getByRole('button', { name: 'Criar primeira equipe' }).click();
   await page.getByRole('textbox', { name: 'Nome da nova equipe' }).fill('Comunicação');
@@ -65,9 +76,11 @@ test('entra com Google emulado, persiste perfil e encerra a sessão', async ({
 
   await page.getByRole('button', { name: /Menu de /i }).click();
   await page.getByRole('menuitem', { name: 'Adicionar equipe' }).click();
-  await page.getByRole('textbox', { name: 'Nome da nova equipe' }).fill('Eventos');
+  const longTeamName = 'Eventos e comunicação institucional para todas as unidades da organização';
+  await page.getByRole('textbox', { name: 'Nome da nova equipe' }).fill(longTeamName);
   await page.getByRole('button', { name: 'Criar equipe' }).click();
-  await expect(page.getByRole('heading', { name: 'Eventos', exact: true })).toBeVisible();
+  await expect(page.getByRole('heading', { name: longTeamName, exact: true })).toBeVisible();
+  await captureReview(page, testInfo, 'long-team-name');
   await page.getByRole('combobox', { name: 'Equipe ativa' }).selectOption({ label: 'Comunicação' });
   await expect(page.getByRole('heading', { name: 'Comunicação', exact: true })).toBeVisible();
 
@@ -111,7 +124,7 @@ test('entra com Google emulado, persiste perfil e encerra a sessão', async ({
   expect(teams.documents).toHaveLength(2);
   expect(teams.documents.map((team) => team.fields['name']?.stringValue).sort()).toEqual([
     'Comunicação',
-    'Eventos',
+    longTeamName,
   ]);
   for (const team of teams.documents) {
     const teamId = team.name.split('/').at(-1);
@@ -161,13 +174,25 @@ test('entra com Google emulado, persiste perfil e encerra a sessão', async ({
   ]);
   expect(persistedInvites.documents[0]?.name).not.toContain(rawInviteToken);
   await page.getByRole('link', { name: 'Links', exact: true }).click();
+  const newLink = page.getByRole('button', { name: 'Novo link' });
+  await newLink.focus();
+  await page.keyboard.press('Enter');
+  await expect(page.getByRole('textbox', { name: 'URL de destino' })).toBeFocused();
+  await page.keyboard.press('Escape');
+  await expect(page.getByRole('dialog')).toBeHidden();
+  await expect(newLink).toBeFocused();
+  await newLink.click();
+  await expect(page.getByRole('textbox', { name: 'URL de destino' })).toBeFocused();
   await page.getByRole('textbox', { name: 'Endereço curto' }).fill('comunicacao-oficial');
   await page
     .getByRole('textbox', { name: 'URL de destino' })
     .fill('https://example.com/comunicacao');
+  await captureReview(page, testInfo, 'create-link');
   await page.keyboard.press('Enter');
+  await expect(newLink).toBeFocused();
   const adminLinkRow = page.getByRole('row').filter({ hasText: '/comunicacao-oficial' });
   await expect(adminLinkRow).toBeVisible();
+  await captureReview(page, testInfo, 'links-created');
   await page.context().grantPermissions(['clipboard-read', 'clipboard-write']);
   await adminLinkRow.getByRole('button', { name: 'Copiar' }).click();
   await expect(page.getByText(/comunicacao-oficial copiado/)).toBeVisible();
@@ -215,8 +240,12 @@ test('entra com Google emulado, persiste perfil e encerra a sessão', async ({
   await clickedLinkRow.getByRole('link', { name: 'Gerenciar' }).click();
   await expect(page.getByText('3', { exact: true }).first()).toBeVisible();
   await expect(page.getByText('nos últimos 30 dias UTC')).toBeVisible();
+  await captureReview(page, testInfo, 'link-detail');
+  await page.getByText('Ver dados diários').focus();
+  await page.keyboard.press('Enter');
   const analyticsTable = page.getByRole('table', { name: /cliques diários em UTC/i });
   await expect(analyticsTable.getByRole('cell', { name: '3', exact: true })).toBeVisible();
+  await page.getByText('Ver dados diários').click();
   await page.getByRole('link', { name: 'Voltar aos links' }).click();
 
   const memberContext = await browser.newContext();
@@ -258,6 +287,7 @@ test('entra com Google emulado, persiste perfil e encerra a sessão', async ({
       memberPage.getByRole('heading', { name: 'Comunicação', exact: true }),
     ).toBeVisible();
     await expect(memberPage.getByText('/comunicacao-oficial')).toBeHidden();
+    await memberPage.getByRole('button', { name: 'Novo link' }).click();
     await memberPage.getByRole('textbox', { name: 'Endereço curto' }).fill('beto-eventos');
     await memberPage
       .getByRole('textbox', { name: 'URL de destino' })
@@ -274,9 +304,24 @@ test('entra com Google emulado, persiste perfil e encerra a sessão', async ({
 
     await expect(page.getByText('/comunicacao-oficial')).toBeVisible();
     await expect(page.getByText('/beto-eventos')).toBeVisible();
+    const longSlug = `campanha-${'a'.repeat(41)}`;
+    await newLink.click();
+    await page.getByRole('textbox', { name: 'Endereço curto' }).fill(longSlug);
+    await page
+      .getByRole('textbox', { name: 'URL de destino' })
+      .fill(`https://example.com/${'planejamento-'.repeat(15)}`);
+    await page.getByRole('button', { name: 'Criar link', exact: true }).click();
+    await expect(page.getByRole('row').filter({ hasText: `/${longSlug}` })).toBeVisible();
+    await page.reload();
+    await expect(page.getByRole('row').filter({ hasText: `/${longSlug}` })).toBeVisible();
+    await captureReview(page, testInfo, 'links');
+    await page.getByRole('link', { name: 'Convites' }).click();
+    await expect(page.getByRole('row', { name: /Ativo Cancelar/ })).toBeVisible();
+    await captureReview(page, testInfo, 'invites');
     await page.getByRole('link', { name: 'Membros' }).click();
     const memberRow = page.getByRole('row').filter({ hasText: 'beto.e2e@example.test' });
     await expect(memberRow).toBeVisible();
+    await captureReview(page, testInfo, 'members');
     await memberRow.getByRole('button', { name: 'Promover' }).click();
     await page.getByRole('dialog').getByRole('button', { name: 'Promover' }).click();
     await expect(page.getByText('Membro promovido a administrador.')).toBeVisible();

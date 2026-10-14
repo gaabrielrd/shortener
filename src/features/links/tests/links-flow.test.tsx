@@ -85,6 +85,8 @@ describe('fluxo de links', () => {
     act(() => fake.emit([]));
     expect(await screen.findByText('Nenhum link disponível')).toBeInTheDocument();
 
+    await fake.user.click(screen.getByRole('button', { name: 'Novo link' }));
+    await vi.waitFor(() => expect(screen.getByLabelText('URL de destino')).toHaveFocus());
     await fake.user.type(screen.getByLabelText('Endereço curto'), 'Campanha-2026');
     await fake.user.type(screen.getByLabelText('URL de destino'), 'https://example.com/campanha');
     expect(screen.getByText('Prévia: https://go.example.test/campanha-2026')).toBeVisible();
@@ -95,6 +97,7 @@ describe('fluxo de links', () => {
       'https://example.com/campanha',
     );
     expect(await screen.findByText('https://go.example.test/campanha-2026')).toBeVisible();
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
 
     act(() => fake.emit([CREATED_LINK]));
     const row = await screen.findByRole('row', { name: /campanha-2026/i });
@@ -105,6 +108,52 @@ describe('fluxo de links', () => {
     expect(
       await screen.findByText('Link https://go.example.test/campanha-2026 copiado.'),
     ).toBeVisible();
+  });
+
+  it('abre com foco no destino e cancela sem criar, devolvendo foco ao gatilho', async () => {
+    const fake = renderLinks();
+    const trigger = await screen.findByRole('button', { name: 'Novo link' });
+    expect(screen.queryByLabelText('URL de destino')).not.toBeInTheDocument();
+    await fake.user.click(trigger);
+    await vi.waitFor(() => expect(screen.getByLabelText('URL de destino')).toHaveFocus());
+    await fake.user.type(screen.getByLabelText('Endereço curto'), 'rascunho');
+    await fake.user.click(screen.getByRole('button', { name: 'Cancelar' }));
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+    await vi.waitFor(() => expect(trigger).toHaveFocus());
+    expect(fake.create).not.toHaveBeenCalled();
+    await fake.user.click(trigger);
+    expect(screen.getByLabelText('Endereço curto')).toHaveValue('');
+    await fake.user.click(screen.getByRole('button', { name: 'Fechar' }));
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+  });
+
+  it('preserva o diálogo durante envio e mantém erro geral junto ao formulário', async () => {
+    const fake = renderLinks();
+    const trigger = await screen.findByRole('button', { name: 'Novo link' });
+    await fake.user.click(trigger);
+    await vi.waitFor(() => expect(screen.getByLabelText('URL de destino')).toHaveFocus());
+    await fake.user.type(screen.getByLabelText('Endereço curto'), 'campanha-2026');
+    await fake.user.type(screen.getByLabelText('URL de destino'), 'https://example.com');
+    let finish!: (result: Awaited<ReturnType<typeof fake.create>>) => void;
+    fake.create.mockImplementationOnce(
+      () =>
+        new Promise((resolve) => {
+          finish = resolve;
+        }),
+    );
+    await fake.user.click(screen.getByRole('button', { name: 'Criar link' }));
+    await vi.waitFor(() => expect(screen.getByRole('button', { name: 'Cancelar' })).toBeDisabled());
+    await fake.user.click(screen.getByRole('button', { name: 'Fechar' }));
+    expect(screen.getByRole('dialog')).toBeVisible();
+    await act(async () => {
+      finish({ ok: false, failure: { code: 'links/unavailable', message: 'Tente novamente.' } });
+      await Promise.resolve();
+    });
+    expect(within(screen.getByRole('dialog')).getByText('Tente novamente.')).toBeVisible();
+    expect(screen.getByLabelText('Endereço curto')).toHaveValue('campanha-2026');
+    await fake.user.click(screen.getByRole('button', { name: 'Criar link' }));
+    expect(await screen.findByText('Link criado')).toBeVisible();
+    await vi.waitFor(() => expect(trigger).toHaveFocus());
   });
 
   it('membro usa a consulta restrita e recebe somente o conteúdo emitido', async () => {
@@ -127,6 +176,8 @@ describe('fluxo de links', () => {
     const fake = renderLinks();
     await vi.waitFor(() => expect(fake.subscribe).toHaveBeenCalledOnce());
     act(() => fake.emit([]));
+    await fake.user.click(screen.getByRole('button', { name: 'Novo link' }));
+    await vi.waitFor(() => expect(screen.getByLabelText('URL de destino')).toHaveFocus());
     await fake.user.type(await screen.findByLabelText('Endereço curto'), 'app');
     await fake.user.type(screen.getByLabelText('URL de destino'), '/relativo');
     await fake.user.click(screen.getByRole('button', { name: 'Criar link' }));
@@ -178,6 +229,11 @@ describe('fluxo de links', () => {
     const row = screen.getByRole('row', { name: /campanha-2026/i });
     await fake.user.click(within(row).getByRole('link', { name: 'Gerenciar' }));
     expect(await screen.findByRole('heading', { name: '/campanha-2026' })).toBeVisible();
+    await fake.user.click(screen.getByRole('button', { name: 'Copiar link' }));
+    expect(await screen.findByText('Endereço copiado.')).toBeVisible();
+    fake.copy.mockResolvedValueOnce(false);
+    await fake.user.click(screen.getByRole('button', { name: 'Copiar link' }));
+    expect(await screen.findByText('Não foi possível copiar automaticamente.')).toBeVisible();
     const destination = screen.getByLabelText('URL de destino');
     await fake.user.clear(destination);
     await fake.user.type(destination, 'http://example.com/novo');
