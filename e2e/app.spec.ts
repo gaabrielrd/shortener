@@ -161,6 +161,8 @@ test('entra com Google emulado, persiste perfil e encerra a sessão', async ({
   ]);
   expect(persistedInvites.documents[0]?.name).not.toContain(rawInviteToken);
   await page.getByRole('link', { name: 'Links', exact: true }).click();
+  await page.getByRole('button', { name: 'Novo link' }).click();
+  await expect(page.getByRole('textbox', { name: 'URL de destino' })).toBeFocused();
   await page.getByRole('textbox', { name: 'Endereço curto' }).fill('comunicacao-oficial');
   await page
     .getByRole('textbox', { name: 'URL de destino' })
@@ -258,6 +260,7 @@ test('entra com Google emulado, persiste perfil e encerra a sessão', async ({
       memberPage.getByRole('heading', { name: 'Comunicação', exact: true }),
     ).toBeVisible();
     await expect(memberPage.getByText('/comunicacao-oficial')).toBeHidden();
+    await memberPage.getByRole('button', { name: 'Novo link' }).click();
     await memberPage.getByRole('textbox', { name: 'Endereço curto' }).fill('beto-eventos');
     await memberPage
       .getByRole('textbox', { name: 'URL de destino' })

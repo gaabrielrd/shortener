@@ -361,3 +361,12 @@ O plano de modernização está em [interface-modernization.md](interface-modern
 `TeamWorkspace` agrupa identidade e seleção da equipe numa faixa compacta,
 seguida das abas autorizadas. Telas filhas cuidam do título da seção e das
 ações próprias, evitando repetir o contexto da equipe.
+
+`LinksPage` abre a criação num `Dialog` do kit, com foco inicial no destino
+e retorno ao gatilho após fechamento. Durante envio, cancelamento é bloqueado
+e o formulário preserva seus valores em falhas. A lista agrupa endereço e
+destino; o mesmo `Table` assume composição vertical abaixo de 60 rem, mantendo
+os cabeçalhos acessíveis. A troca de equipe remonta o `Outlet` pelo ID para
+descartar diálogos e feedback do contexto anterior. No detalhe, cópia aparece
+junto ao endereço, destino e analytics são a área principal e ações de estado
+ficam separadas do histórico.

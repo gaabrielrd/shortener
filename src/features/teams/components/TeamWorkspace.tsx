@@ -98,7 +98,7 @@ export function TeamWorkspace() {
       </nav>
 
       <div className={styles.content}>
-        <Outlet />
+        <Outlet key={requestedTeam.id} />
       </div>
     </section>
   );
