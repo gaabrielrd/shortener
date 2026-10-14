@@ -91,7 +91,12 @@ confirma os três `302` para o destino editado e verifica total e dia UTC no
 detalhe. Os testes de Rules comprovam separadamente que criador e administrador
 leem agregados, enquanto outro membro não lê nem escreve.
 
-A mesma jornada roda em Chromium desktop e em viewport/dispositivo Pixel 7. O
+A mesma jornada roda em Chromium desktop e em dispositivo Pixel 7 com viewport
+de 360 × 800 px. Ela verifica URLs e nomes longos, abertura e fechamento do
+diálogo por teclado, retorno de foco e ausência de rolagem horizontal na página.
+Capturas de login, primeiro acesso, criação, links, detalhe, membros e convites
+são anexadas aos resultados em `test-results/`. A revisão da modernização está
+em [review/README.md](review/README.md). O
 CI acrescenta um job `Firebase Emulators`, com Java 21, para executar Auth,
 Firestore, Functions e Hosting sem recurso real. `test:firebase` mantém uma
 única sessão da pilha enquanto roda todas as integrações sequencialmente, o que
@@ -111,8 +116,8 @@ se um teste contém o projeto de produção ou inicia emulador sem `demo-shorten
    layout e espaçamento que o contrato não vê.
 
 A fonte do sistema muda o resultado, então cada plataforma tem sua própria
-imagem. Quando não existe imagem para a plataforma atual (por exemplo, no Linux
-do CI antes de alguém gerar a primeira), o teste é **pulado** com a instrução,
+imagem. Há referências para macOS e Linux. Quando não existe imagem para a
+plataforma atual, o teste é **pulado** com a instrução,
 em vez de falhar.
 
 Depois de uma mudança visual **intencional**, regere e revise a imagem no diff

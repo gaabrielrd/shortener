@@ -174,24 +174,26 @@ export function MembersPage() {
 
   return (
     <section className={styles.page}>
-      <PageHeader
-        title="Membros"
-        description={
-          isAdministrator
-            ? 'Gerencie as pessoas e os níveis de acesso da equipe.'
-            : 'Pessoas que participam desta equipe.'
-        }
-        actions={
-          <Button
-            type="button"
-            variant="secondary"
-            onClick={() => setConfirmation({ kind: 'leave' })}
-          >
-            <LogOut className="icon icon-sm" aria-hidden="true" />
-            Sair da equipe
-          </Button>
-        }
-      />
+      <div className={styles.pageHeader}>
+        <PageHeader
+          title="Membros"
+          description={
+            isAdministrator
+              ? 'Gerencie as pessoas e os níveis de acesso da equipe.'
+              : 'Pessoas que participam desta equipe.'
+          }
+          actions={
+            <Button
+              type="button"
+              variant="secondary"
+              onClick={() => setConfirmation({ kind: 'leave' })}
+            >
+              <LogOut className="icon icon-sm" aria-hidden="true" />
+              Sair da equipe
+            </Button>
+          }
+        />
+      </div>
 
       {members.feedback !== null ? (
         <Alert variant="success" title="Alteração concluída">

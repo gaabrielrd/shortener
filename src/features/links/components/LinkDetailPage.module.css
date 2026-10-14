@@ -59,8 +59,8 @@
   gap: var(--space-3);
   flex-wrap: wrap;
 }
-.page > header h2,
-.page > header p {
+.pageHeader h2,
+.pageHeader p {
   overflow-wrap: anywhere;
 }
 .grid > section {
@@ -81,5 +81,11 @@
   .headerActions {
     width: 100%;
     justify-content: space-between;
+  }
+}
+
+@media (max-width: 40rem) {
+  .pageHeader > div > div:last-child {
+    width: 100%;
   }
 }

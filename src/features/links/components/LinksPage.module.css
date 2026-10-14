@@ -4,7 +4,7 @@
   gap: var(--space-5);
   min-width: 0;
 }
-.page > header {
+.pageHeader > div {
   align-items: center;
 }
 .form {
@@ -175,6 +175,10 @@
     content: 'Criado em';
   }
   .destination span {
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
     white-space: normal;
     overflow-wrap: anywhere;
   }
@@ -184,12 +188,12 @@
 }
 
 @media (max-width: 40rem) {
-  .page > header {
+  .pageHeader > div {
     align-items: stretch;
     flex-direction: column;
   }
-  .page > header > div:last-child,
-  .page > header button {
+  .pageHeader > div > div:last-child,
+  .pageHeader button {
     width: 100%;
   }
   .created {

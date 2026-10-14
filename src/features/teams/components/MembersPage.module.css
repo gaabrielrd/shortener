@@ -35,15 +35,15 @@
 .tableWrap td {
   vertical-align: middle;
 }
-.page > header {
+.pageHeader > div {
   align-items: center;
 }
 @media (max-width: 40rem) {
-  .page > header {
+  .pageHeader > div {
     align-items: stretch;
     flex-direction: column;
   }
-  .page > header button {
+  .pageHeader button {
     width: 100%;
   }
   .tableWrap table,

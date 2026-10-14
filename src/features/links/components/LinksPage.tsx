@@ -43,6 +43,7 @@ export function LinksPage() {
   const [createOpen, setCreateOpen] = useState(false);
   const createTriggerId = useId();
   const formId = `${createTriggerId}-form`;
+  const restoreFocusRef = useRef(false);
   const formRef = useRef<HTMLFormElement>(null);
   const [slug, setSlug] = useState('');
   const [destinationUrl, setDestinationUrl] = useState('');
@@ -59,20 +60,22 @@ export function LinksPage() {
   }, [requestedTeam, selectTeam, teams.activeTeam?.id]);
 
   useEffect(() => {
-    if (!createOpen) return;
-    const frame = window.requestAnimationFrame(() =>
-      formRef.current?.querySelector('input')?.focus(),
-    );
+    if (!createOpen && !restoreFocusRef.current) return;
+    restoreFocusRef.current = false;
+    const frame = window.requestAnimationFrame(() => {
+      if (createOpen) formRef.current?.querySelector('input')?.focus();
+      else document.getElementById(createTriggerId)?.focus();
+    });
     return () => window.cancelAnimationFrame(frame);
-  }, [createOpen]);
+  }, [createOpen, createTriggerId]);
 
   function closeCreateDialog() {
     if (links.isCreating) return;
+    restoreFocusRef.current = true;
     setCreateOpen(false);
     setSlug('');
     setDestinationUrl('');
     setFailure(null);
-    window.requestAnimationFrame(() => document.getElementById(createTriggerId)?.focus());
   }
 
   if (teams.status === 'loading' || (requestedTeam !== null && teams.activeTeam?.id !== teamId)) {
@@ -196,27 +199,29 @@ export function LinksPage() {
 
   return (
     <section className={styles.page}>
-      <PageHeader
-        title="Links"
-        description={
-          requestedTeam.role === 'admin'
-            ? 'Você vê todos os links desta equipe.'
-            : 'Você vê apenas os links criados por você.'
-        }
-        actions={
-          <Button
-            id={createTriggerId}
-            onClick={() => {
-              setCreatedSlug(null);
-              setCopyFeedback(null);
-              setCreateOpen(true);
-            }}
-          >
-            <Plus className="icon icon-sm" aria-hidden="true" />
-            Novo link
-          </Button>
-        }
-      />
+      <div className={styles.pageHeader}>
+        <PageHeader
+          title="Links"
+          description={
+            requestedTeam.role === 'admin'
+              ? 'Você vê todos os links desta equipe.'
+              : 'Você vê apenas os links criados por você.'
+          }
+          actions={
+            <Button
+              id={createTriggerId}
+              onClick={() => {
+                setCreatedSlug(null);
+                setCopyFeedback(null);
+                setCreateOpen(true);
+              }}
+            >
+              <Plus className="icon icon-sm" aria-hidden="true" />
+              Novo link
+            </Button>
+          }
+        />
+      </div>
       {createOpen ? (
         <Dialog
           open

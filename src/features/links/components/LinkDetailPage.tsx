@@ -187,32 +187,34 @@ export function LinkDetailPage() {
         <ArrowLeft className="icon icon-sm" aria-hidden="true" />
         Voltar aos links
       </Link>
-      <PageHeader
-        title={`/${link.slug}`}
-        description={links.publicUrl(link.slug)}
-        actions={
-          <div className={styles.headerActions}>
-            <Badge variant={link.status === 'active' ? 'success' : 'neutral'}>
-              {statusLabel(link.status)}
-            </Badge>
-            <Button
-              variant="secondary"
-              onClick={() => {
-                void links
-                  .copy(links.publicUrl(link.slug))
-                  .then((copied) =>
-                    setCopyFeedback(
-                      copied ? 'Endereço copiado.' : 'Não foi possível copiar automaticamente.',
-                    ),
-                  );
-              }}
-            >
-              <Clipboard className="icon icon-sm" aria-hidden="true" />
-              Copiar link
-            </Button>
-          </div>
-        }
-      />
+      <div className={styles.pageHeader}>
+        <PageHeader
+          title={`/${link.slug}`}
+          description={links.publicUrl(link.slug)}
+          actions={
+            <div className={styles.headerActions}>
+              <Badge variant={link.status === 'active' ? 'success' : 'neutral'}>
+                {statusLabel(link.status)}
+              </Badge>
+              <Button
+                variant="secondary"
+                onClick={() => {
+                  void links
+                    .copy(links.publicUrl(link.slug))
+                    .then((copied) =>
+                      setCopyFeedback(
+                        copied ? 'Endereço copiado.' : 'Não foi possível copiar automaticamente.',
+                      ),
+                    );
+                }}
+              >
+                <Clipboard className="icon icon-sm" aria-hidden="true" />
+                Copiar link
+              </Button>
+            </div>
+          }
+        />
+      </div>
       {copyFeedback !== null ? <p role="status">{copyFeedback}</p> : null}
 
       {feedback !== null ? (

@@ -140,9 +140,11 @@ export function InvitesPage() {
       </form>
 
       {createdLink !== null ? (
-        <Alert variant="success" title="Convite criado">
+        <div className={styles.createdResult}>
+          <Alert variant="success" title="Convite criado">
+            Copie agora: por segurança, o endereço completo não poderá ser recuperado depois.
+          </Alert>
           <div className={styles.created}>
-            <p>Copie agora: por segurança, o endereço completo não poderá ser recuperado depois.</p>
             <div className={styles.copyRow}>
               <div className={styles.copyField}>
                 <Input label="Link do convite" value={createdLink} readOnly />
@@ -166,7 +168,7 @@ export function InvitesPage() {
             </div>
             {copyFeedback !== null ? <p role="status">{copyFeedback}</p> : null}
           </div>
-        </Alert>
+        </div>
       ) : null}
 
       {invites.error !== null && invites.status !== 'error' ? (

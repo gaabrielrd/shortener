@@ -62,7 +62,7 @@ export default defineConfig({
     {
       name: 'mobile-chromium',
       testMatch: /app\.spec\.ts/,
-      use: { ...devices['Pixel 7'] },
+      use: { ...devices['Pixel 7'], viewport: { width: 360, height: 800 } },
     },
   ],
   webServer: [

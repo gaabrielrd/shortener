@@ -88,3 +88,14 @@ o pacote instalado. A composição deve acomodar nomes e URLs longos.
 Um canal de teste Firebase depende de autenticação disponível e de domínio
 autorizado para login Google. Na ausência de credenciais, entregar capturas e
 instruções locais reproduzíveis, registrando a limitação.
+
+## Resultado da execução
+
+As cinco etapas foram executadas, com commits separados e validação completa
+entre os incrementos. As capturas finais e as instruções de revisão ficam em
+[review/README.md](review/README.md). A revisão cobre desktop e 360 px, entradas
+longas, foco no diálogo e funcionamento das permissões.
+
+O Firebase CLI não dispõe de conta autenticada neste ambiente. Não foi criado
+canal de teste; a publicação depende de uma sessão autorizada para o projeto
+existente. A aplicação e o backend de produção não foram alterados.

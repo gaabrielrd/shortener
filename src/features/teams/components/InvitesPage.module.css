@@ -37,6 +37,7 @@
 
 .copyField {
   flex: 1 1 20rem;
+  min-width: 0;
 }
 
 .tableWrap {
@@ -106,4 +107,9 @@
   .tableWrap tbody td:nth-child(2)::before {
     content: 'Validade';
   }
+}
+
+.createdResult {
+  display: grid;
+  gap: var(--space-3);
 }
