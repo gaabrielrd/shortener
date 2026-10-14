@@ -112,11 +112,12 @@ se um teste contém o projeto de produção ou inicia emulador sem `demo-shorten
    determinístico em qualquer sistema operacional e a falha diz exatamente qual
    valor mudou. Roda sempre, inclusive no CI.
 2. **Regressão visual**: compara a página `/styleguide` inteira, pixel a pixel,
-   com a imagem em `e2e/__screenshots__/<plataforma>/`. Pega mudanças de
+   com a imagem em `e2e/__screenshots__/<plataforma>/` (Linux inclui distribuição e versão). Pega mudanças de
    layout e espaçamento que o contrato não vê.
 
-A fonte do sistema muda o resultado, então cada plataforma tem sua própria
-imagem. Há referências para macOS e Linux. Quando não existe imagem para a
+A fonte e os controles nativos mudam entre plataformas e distribuições Linux.
+Há referências para macOS e Debian 13. Ubuntu exige sua própria referência;
+a captura Debian não deve ser comparada com a do runner Ubuntu. Quando não existe imagem para a
 plataforma atual, o teste é **pulado** com a instrução,
 em vez de falhar.
 

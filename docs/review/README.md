@@ -26,7 +26,7 @@ da primeira dobra. Datas e URLs locais são dados do ambiente de teste.
 - `npm run validate`: arquitetura, documentação, styleguide, lint, tipos,
   cobertura, testes de backend e scripts, build e smoke HTTP.
 - `npm run test:e2e`: fluxo completo em desktop e 360 px, contrato de tokens e
-  regressão visual de `/styleguide` no Linux.
+  regressão visual de `/styleguide` no Debian 13.
 - Teclado: login, abertura e Escape no diálogo, foco inicial e retorno ao
   botão Novo link, gestão de estado e expansão dos dados diários.
 - Entradas longas: nome de equipe, slug de 50 caracteres e URL extensa;
@@ -35,8 +35,10 @@ da primeira dobra. Datas e URLs locais são dados do ambiente de teste.
   associação continuam cobertas pelo fluxo emulado.
 
 O E2E anexa as capturas em `test-results/`, permitindo regenerar a evidência
-com `npm run test:e2e`. A referência Linux de `/styleguide` foi criada nesta
-entrega, sem substituir a referência existente para macOS.
+com `npm run test:e2e`. A referência Debian 13 de `/styleguide` foi criada nesta
+entrega, sem substituir a referência existente para macOS. A comparação de
+pixels exige a mesma distribuição e versão: Ubuntu usa fontes e controles
+nativos diferentes, com uma referência própria ainda pendente.
 
 ## Revisão interativa local
 

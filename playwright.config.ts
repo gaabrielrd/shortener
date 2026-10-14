@@ -1,5 +1,18 @@
+import { existsSync, readFileSync } from 'node:fs';
 import { createServer } from 'node:net';
 import { defineConfig, devices } from '@playwright/test';
+
+// Controles nativos e fontes de reserva variam também entre distribuições Linux.
+const osRelease =
+  process.platform === 'linux' && existsSync('/etc/os-release')
+    ? readFileSync('/etc/os-release', 'utf8')
+    : '';
+const distribution = osRelease.match(/^ID="?([^"\n]+)"?$/m)?.[1];
+const version = osRelease.match(/^VERSION_ID="?([^"\n]+)"?$/m)?.[1];
+const snapshotPlatform =
+  distribution && version
+    ? `linux-${distribution}-${version}`.replace(/[^a-zA-Z0-9.-]/g, '-')
+    : process.platform;
 
 async function availablePort(): Promise<number> {
   return new Promise((resolve, reject) => {
@@ -40,9 +53,9 @@ export default defineConfig({
   retries: process.env.CI ? 1 : 0,
   workers: 1,
   reporter: process.env.CI ? [['github'], ['html', { open: 'never' }]] : 'list',
-  // Imagens de referência por plataforma: a fonte do sistema muda o
-  // resultado, então a imagem do macOS não serve para o Linux do CI.
-  snapshotPathTemplate: '{testDir}/__screenshots__/{platform}/{arg}{ext}',
+  // Imagens por plataforma e distribuição: os controles e fontes nativos
+  // do Debian local não servem como referência do Ubuntu usado pelo CI.
+  snapshotPathTemplate: `{testDir}/__screenshots__/${snapshotPlatform}/{arg}{ext}`,
   expect: {
     // Estreito de propósito: na mesma plataforma a renderização é
     // determinística, e uma tolerância folgada deixaria passar troca de cor

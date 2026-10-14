@@ -1,5 +1,4 @@
 import { existsSync } from 'node:fs';
-import { join } from 'node:path';
 import { expect, test } from '@playwright/test';
 
 /**
@@ -14,7 +13,6 @@ import { expect, test } from '@playwright/test';
  */
 
 const screenshotName = 'styleguide.png';
-const baseline = join('e2e', '__screenshots__', process.platform, screenshotName);
 
 test('mantém o contrato de estilo do tema', async ({ page }) => {
   await page.goto('/styleguide');
@@ -63,8 +61,8 @@ test('mantém a aparência da página do styleguide', async ({ page }) => {
   // representam um pedido para gerar ou substituir referências.
   const criandoReferencia = ['all', 'changed'].includes(test.info().config.updateSnapshots);
   test.skip(
-    !existsSync(baseline) && !criandoReferencia,
-    `Sem imagem de referência para ${process.platform}. Gere com: npm run test:e2e:update`,
+    !existsSync(test.info().snapshotPath(screenshotName)) && !criandoReferencia,
+    `Sem imagem de referência para este sistema. Gere com: npm run test:e2e:update`,
   );
 
   await page.goto('/styleguide');
