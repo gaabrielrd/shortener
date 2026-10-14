@@ -86,6 +86,7 @@ describe('fluxo de links', () => {
     expect(await screen.findByText('Nenhum link disponível')).toBeInTheDocument();
 
     await fake.user.click(screen.getByRole('button', { name: 'Novo link' }));
+    await vi.waitFor(() => expect(screen.getByLabelText('URL de destino')).toHaveFocus());
     await fake.user.type(screen.getByLabelText('Endereço curto'), 'Campanha-2026');
     await fake.user.type(screen.getByLabelText('URL de destino'), 'https://example.com/campanha');
     expect(screen.getByText('Prévia: https://go.example.test/campanha-2026')).toBeVisible();
@@ -130,6 +131,7 @@ describe('fluxo de links', () => {
     const fake = renderLinks();
     const trigger = await screen.findByRole('button', { name: 'Novo link' });
     await fake.user.click(trigger);
+    await vi.waitFor(() => expect(screen.getByLabelText('URL de destino')).toHaveFocus());
     await fake.user.type(screen.getByLabelText('Endereço curto'), 'campanha-2026');
     await fake.user.type(screen.getByLabelText('URL de destino'), 'https://example.com');
     let finish!: (result: Awaited<ReturnType<typeof fake.create>>) => void;
@@ -140,7 +142,7 @@ describe('fluxo de links', () => {
         }),
     );
     await fake.user.click(screen.getByRole('button', { name: 'Criar link' }));
-    expect(screen.getByRole('button', { name: 'Cancelar' })).toBeDisabled();
+    await vi.waitFor(() => expect(screen.getByRole('button', { name: 'Cancelar' })).toBeDisabled());
     await fake.user.click(screen.getByRole('button', { name: 'Fechar' }));
     expect(screen.getByRole('dialog')).toBeVisible();
     await act(async () => {
@@ -175,6 +177,7 @@ describe('fluxo de links', () => {
     await vi.waitFor(() => expect(fake.subscribe).toHaveBeenCalledOnce());
     act(() => fake.emit([]));
     await fake.user.click(screen.getByRole('button', { name: 'Novo link' }));
+    await vi.waitFor(() => expect(screen.getByLabelText('URL de destino')).toHaveFocus());
     await fake.user.type(await screen.findByLabelText('Endereço curto'), 'app');
     await fake.user.type(screen.getByLabelText('URL de destino'), '/relativo');
     await fake.user.click(screen.getByRole('button', { name: 'Criar link' }));
