@@ -1,5 +1,5 @@
 import { useEffect } from 'react';
-import { Badge, Button, ErrorState, LoadingState, PageHeader, Select } from '@vitru/styleguide';
+import { Badge, Button, ErrorState, LoadingState, Select } from '@vitru/styleguide';
 import { Link2, UserPlus, Users } from 'lucide-react';
 import { Navigate, NavLink, Outlet, useNavigate, useParams } from 'react-router';
 import { useTeams } from './teamsContext';
@@ -46,28 +46,29 @@ export function TeamWorkspace() {
 
   return (
     <section className={styles.workspace}>
-      <PageHeader
-        title={requestedTeam.name}
-        description="Gerencie os links e o acesso das pessoas neste espaço de trabalho."
-        actions={
-          <Badge variant={requestedTeam.role === 'admin' ? 'accent' : 'neutral'}>
-            {requestedTeam.role === 'admin' ? 'Administrador' : 'Membro'}
-          </Badge>
-        }
-      />
-
-      <div className={styles.contextBar}>
-        <Select
-          label="Equipe ativa"
-          value={requestedTeam.id}
-          options={teams.teams.map((team) => ({ value: team.id, label: team.name }))}
-          onChange={(event) => {
-            const nextTeamId = event.target.value;
-            if (teams.selectTeam(nextTeamId)) {
-              void navigate(`/app/equipes/${nextTeamId}/links`);
-            }
-          }}
-        />
+      <div className={styles.workspaceHeader}>
+        <div className={styles.identity}>
+          <p className={styles.eyebrow}>Espaço de trabalho</p>
+          <div className={styles.teamName}>
+            <h2>{requestedTeam.name}</h2>
+            <Badge variant="neutral">
+              {requestedTeam.role === 'admin' ? 'Administrador' : 'Membro'}
+            </Badge>
+          </div>
+        </div>
+        <div className={styles.contextBar}>
+          <Select
+            label="Equipe ativa"
+            value={requestedTeam.id}
+            options={teams.teams.map((team) => ({ value: team.id, label: team.name }))}
+            onChange={(event) => {
+              const nextTeamId = event.target.value;
+              if (teams.selectTeam(nextTeamId)) {
+                void navigate(`/app/equipes/${nextTeamId}/links`);
+              }
+            }}
+          />
+        </div>
       </div>
 
       <nav className={styles.tabs} aria-label="Seções da equipe">
@@ -97,7 +98,7 @@ export function TeamWorkspace() {
       </nav>
 
       <div className={styles.content}>
-        <Outlet />
+        <Outlet key={requestedTeam.id} />
       </div>
     </section>
   );

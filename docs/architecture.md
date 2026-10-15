@@ -353,3 +353,26 @@ Detalhes em [testing.md](testing.md).
 ## Evolução incremental
 
 O template começa simples de propósito. Adicione estrutura, bibliotecas ou camadas apenas quando um problema real aparecer, e registre a mudança em um ADR (`docs/decisions/`).
+
+## Composição da interface administrativa
+
+O plano de modernização está em [interface-modernization.md](interface-modernization.md).
+`App` mantém o cabeçalho e um `main` com atalho de teclado para o conteúdo.
+`TeamWorkspace` agrupa identidade e seleção da equipe numa faixa compacta,
+seguida das abas autorizadas. Telas filhas cuidam do título da seção e das
+ações próprias, evitando repetir o contexto da equipe.
+
+`LinksPage` abre a criação num `Dialog` do kit, com foco inicial no destino
+e retorno ao gatilho após fechamento. Durante envio, cancelamento é bloqueado
+e o formulário preserva seus valores em falhas. A lista agrupa endereço e
+destino; o mesmo `Table` assume composição vertical abaixo de 60 rem, mantendo
+os cabeçalhos acessíveis. A troca de equipe remonta o `Outlet` pelo ID para
+descartar diálogos e feedback do contexto anterior. No detalhe, cópia aparece
+junto ao endereço, destino e analytics são a área principal e ações de estado
+ficam separadas do histórico.
+
+Analytics prioriza total, período e gráfico, com datas nas extremidades. A
+tabela diária fica num `details` nativo, acionável por teclado. Membros e
+convites usam títulos curtos e listas verticais no celular; a criação de
+convite permanece no formulário de validade, sem alteração do token ou das
+permissões. O login usa a marca existente e uma única ação de entrada.

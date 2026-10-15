@@ -13,7 +13,7 @@ import {
   Table,
   type TableColumn,
 } from '@vitru/styleguide';
-import { Archive, ArrowLeft, Power, RotateCcw, Save } from 'lucide-react';
+import { Archive, ArrowLeft, Clipboard, Power, RotateCcw, Save } from 'lucide-react';
 import { Link, useNavigate, useParams } from 'react-router';
 import { AnalyticsPanel } from '@/features/analytics';
 import { useMembers, useTeams } from '@/features/teams';
@@ -64,6 +64,7 @@ export function LinkDetailPage() {
   const requestedTeam = teams.teams.find((team) => team.id === teamId) ?? null;
   const link = links.links.find((item) => item.slug === slug) ?? null;
   const [fieldError, setFieldError] = useState<string | null>(null);
+  const [copyFeedback, setCopyFeedback] = useState<string | null>(null);
   const [feedback, setFeedback] = useState<string | null>(null);
   const [statusCommand, setStatusCommand] = useState<LinkStatusCommand | null>(null);
   const [history, setHistory] = useState<readonly LinkHistoryEntry[]>([]);
@@ -182,19 +183,39 @@ export function LinkDetailPage() {
 
   return (
     <section className={styles.page}>
-      <PageHeader
-        title={`/${link.slug}`}
-        description="O endereço é permanente. Destino, estado e histórico podem ser gerenciados aqui."
-        actions={
-          <Badge variant={link.status === 'active' ? 'accent' : 'neutral'}>
-            {statusLabel(link.status)}
-          </Badge>
-        }
-      />
       <Link className={styles.backLink} to={`/app/equipes/${requestedTeam.id}/links`}>
         <ArrowLeft className="icon icon-sm" aria-hidden="true" />
         Voltar aos links
       </Link>
+      <div className={styles.pageHeader}>
+        <PageHeader
+          title={`/${link.slug}`}
+          description={links.publicUrl(link.slug)}
+          actions={
+            <div className={styles.headerActions}>
+              <Badge variant={link.status === 'active' ? 'success' : 'neutral'}>
+                {statusLabel(link.status)}
+              </Badge>
+              <Button
+                variant="secondary"
+                onClick={() => {
+                  void links
+                    .copy(links.publicUrl(link.slug))
+                    .then((copied) =>
+                      setCopyFeedback(
+                        copied ? 'Endereço copiado.' : 'Não foi possível copiar automaticamente.',
+                      ),
+                    );
+                }}
+              >
+                <Clipboard className="icon icon-sm" aria-hidden="true" />
+                Copiar link
+              </Button>
+            </div>
+          }
+        />
+      </div>
+      {copyFeedback !== null ? <p role="status">{copyFeedback}</p> : null}
 
       {feedback !== null ? (
         <Alert variant="success" title="Link atualizado">
@@ -233,32 +254,10 @@ export function LinkDetailPage() {
           </form>
         </Card>
 
-        <Card title="Estado do link" tone="quiet">
-          <div className={styles.statusActions}>
-            {link.status === 'active' ? (
-              <Button variant="secondary" onClick={() => setStatusCommand('disable')}>
-                <Power className="icon icon-sm" aria-hidden="true" /> Desativar
-              </Button>
-            ) : null}
-            {link.status === 'disabled' || link.status === 'archived' ? (
-              <Button onClick={() => setStatusCommand('restore')}>
-                <RotateCcw className="icon icon-sm" aria-hidden="true" />
-                {link.status === 'archived' ? 'Restaurar' : 'Reativar'}
-              </Button>
-            ) : null}
-            {link.status !== 'archived' ? (
-              <Button variant="danger" onClick={() => setStatusCommand('archive')}>
-                <Archive className="icon icon-sm" aria-hidden="true" /> Arquivar
-              </Button>
-            ) : null}
-          </div>
-          <p className={styles.note}>Arquivar nunca libera o endereço para outra pessoa.</p>
-        </Card>
+        <AnalyticsPanel slug={link.slug} totalClicks={link.totalClicks} />
       </div>
 
-      <AnalyticsPanel slug={link.slug} totalClicks={link.totalClicks} />
-
-      <Card title="Histórico imutável" tone="raised">
+      <Card title="Histórico de alterações">
         {historyStatus === 'loading' && history.length === 0 ? (
           <LoadingState label="Carregando histórico..." />
         ) : historyStatus === 'error' ? (
@@ -299,6 +298,28 @@ export function LinkDetailPage() {
             ) : null}
           </>
         )}
+      </Card>
+
+      <Card title="Estado do link" tone="quiet">
+        <div className={styles.statusActions}>
+          {link.status === 'active' ? (
+            <Button variant="secondary" onClick={() => setStatusCommand('disable')}>
+              <Power className="icon icon-sm" aria-hidden="true" /> Desativar
+            </Button>
+          ) : null}
+          {link.status === 'disabled' || link.status === 'archived' ? (
+            <Button onClick={() => setStatusCommand('restore')}>
+              <RotateCcw className="icon icon-sm" aria-hidden="true" />
+              {link.status === 'archived' ? 'Restaurar' : 'Reativar'}
+            </Button>
+          ) : null}
+          {link.status !== 'archived' ? (
+            <Button variant="danger" onClick={() => setStatusCommand('archive')}>
+              <Archive className="icon icon-sm" aria-hidden="true" /> Arquivar
+            </Button>
+          ) : null}
+        </div>
+        <p className={styles.note}>Arquivar nunca libera o endereço para outra pessoa.</p>
       </Card>
 
       <Dialog

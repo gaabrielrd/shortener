@@ -33,17 +33,17 @@ export function TeamsPage() {
         title="Crie seu primeiro espaço de trabalho"
         description="Uma equipe reúne as pessoas e os links que vocês administram juntas."
       />
-      <Card tone="raised">
+      <Card tone="quiet">
         <EmptyState
           title="Você ainda não participa de uma equipe"
           description="Comece criando a equipe que vai publicar os primeiros links curtos."
+          action={
+            <Button type="button" onClick={() => setCreateOpen(true)}>
+              <Plus className="icon icon-sm" aria-hidden="true" />
+              Criar primeira equipe
+            </Button>
+          }
         />
-        <div className={styles.action}>
-          <Button type="button" onClick={() => setCreateOpen(true)}>
-            <Plus className="icon icon-sm" aria-hidden="true" />
-            Criar primeira equipe
-          </Button>
-        </div>
       </Card>
 
       <CreateTeamDialog

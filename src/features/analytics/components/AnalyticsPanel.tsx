@@ -57,10 +57,12 @@ export function AnalyticsPanel({
 
   const points = state.status === 'ready' ? state.points : [];
   const periodClicks = points.reduce((total, point) => total + point.count, 0);
+  const firstDay = points.at(0)?.dayUtc;
+  const lastDay = points.at(-1)?.dayUtc;
   const maximum = Math.max(1, ...points.map((point) => point.count));
 
   return (
-    <Card title="Analytics" tone="raised">
+    <Card title="Cliques">
       <div className={styles.summary} aria-label="Resumo de cliques">
         <BarChart3 className="icon" aria-hidden="true" />
         <div>
@@ -111,15 +113,24 @@ export function AnalyticsPanel({
                 />
               ))}
             </div>
+            {firstDay !== undefined && lastDay !== undefined ? (
+              <div className={styles.chartAxis} aria-hidden="true">
+                <span>{formatUtcDay(firstDay)}</span>
+                <span>{formatUtcDay(lastDay)}</span>
+              </div>
+            ) : null}
           </div>
-          <div className={styles.tableWrap}>
-            <Table
-              caption={`Cliques diários em UTC do link ${slug}, últimos 30 dias`}
-              columns={columns}
-              rows={[...points].reverse()}
-              rowKey={(point) => point.dayUtc}
-            />
-          </div>
+          <details className={styles.dailyData}>
+            <summary>Ver dados diários</summary>
+            <div className={styles.tableWrap}>
+              <Table
+                caption={`Cliques diários em UTC do link ${slug}, últimos 30 dias`}
+                columns={columns}
+                rows={[...points].reverse()}
+                rowKey={(point) => point.dayUtc}
+              />
+            </div>
+          </details>
         </>
       )}
     </Card>

@@ -1,7 +1,8 @@
 .page {
   display: flex;
   flex-direction: column;
-  gap: var(--space-6);
+  gap: var(--space-5);
+  min-width: 0;
 }
 
 .backLink {
@@ -13,13 +14,12 @@
 
 .grid {
   display: grid;
-  grid-template-columns: minmax(0, 1.3fr) minmax(16rem, 0.7fr);
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1.2fr);
   gap: var(--space-5);
   align-items: start;
 }
 
-.form,
-.statusActions {
+.form {
   display: flex;
   flex-direction: column;
   gap: var(--space-4);
@@ -49,6 +49,43 @@
 @media (max-width: 40rem) {
   .form button,
   .statusActions button {
+    width: 100%;
+  }
+}
+
+.headerActions {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  flex-wrap: wrap;
+}
+.pageHeader h2,
+.pageHeader p {
+  overflow-wrap: anywhere;
+}
+.grid > section {
+  min-width: 0;
+}
+.statusActions {
+  display: flex;
+  gap: var(--space-3);
+  flex-wrap: wrap;
+}
+.tableWrap td {
+  overflow-wrap: anywhere;
+}
+.tableWrap table {
+  min-width: 44rem;
+}
+@media (max-width: 40rem) {
+  .headerActions {
+    width: 100%;
+    justify-content: space-between;
+  }
+}
+
+@media (max-width: 40rem) {
+  .pageHeader > div > div:last-child {
     width: 100%;
   }
 }
