@@ -91,3 +91,38 @@ Revisão semântica confirmou os manifests de workspace e ranges preservados.
 Arquivos do incremento: lock e este registro. A auditoria continua falhando;
 PR20 permanece parcial e não deve ser integrado enquanto houver check vermelho.
 Resultados do E2E e do CI no SHA publicado ficam registrados no PR20.
+
+## Retomada de 24/10/2026: retirada de braces e novos advisories
+
+[GHSA-vfj7-8cjw-p6xm](https://github.com/advisories/GHSA-vfj7-8cjw-p6xm)
+foi retirado em 23/10 por não ser explorável na prática. A reexecução completa
+do SHA 1b2386b passou Validate, E2E e Firebase, mas a auditoria encontrou
+3 altos e 10 moderados novos/remanescentes. Nenhum merge foi feito nesse estado.
+
+O lock foi atualizado somente em caminhos compatíveis:
+
+- body-parser 1.20.8 para 1.20.9 e 2.3.0 para 2.4.0, nas majors exigidas
+  por Express/Firebase e pelo SDK MCP.
+- undici 6.29.0 para 6.29.1 e 8.11.2 para 8.12.3, dentro dos ranges dos
+  consumidores e com suporte ao Node 22.22.2.
+- zod 4.4.3 para 4.6.7, fast-uri 3.1.8 para 3.1.9 e ip-address 10.7.3
+  para 10.7.4.
+
+Versões, integridades, datas e manifests foram consultados no registro npm
+oficial. Firebase CLI permanece em 15.34.0. Manifests de workspace e todas
+as versões diretas foram preservados, incluindo Vitest/coverage 4.1.11.
+A tentativa de atualizar o par Vitest/coverage encontrou erro interno de
+peers no npm 10.6.0; nenhuma alteração parcial dessa tentativa foi publicada.
+A resolução apenas transitiva funcionou em diretório isolado e o lock
+resultante passou por `npm ci` na toolchain declarada.
+
+Auditoria local: 13 pacotes afetados (3 altos/10 moderados) para 8 moderados,
+sem altos, críticos ou baixos. Restam OpenTelemetry/uuid e consumidores
+Firebase, além de @vitest/mocker e sua propagação em Vitest/coverage.
+O audit-level=high do CI foi preservado; nenhum aviso foi ignorado.
+
+`npm run validate` passou: 115 testes web com cobertura, 38 Functions,
+51 contratos, lint, tipos, build e smoke HTTP. Os resultados finais de E2E,
+Firebase e CI no SHA publicado ficam registrados no PR20. Merge continua
+condicionado a todos os checks verdes, com verificação posterior da principal.
+Não houve mudança de produto, interface, permissões ou limites de testes.
