@@ -54,7 +54,7 @@
   },
   "dependencies": {
     "@vitru/styleguide": "^0.1.0",
-    "firebase": "^12.19.0",
+    "firebase": "^13.0.0",
     "lucide-react": "^1.47.0",
     "react": "^19.3.0",
     "react-dom": "^19.3.0",
